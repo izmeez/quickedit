@@ -3,14 +3,14 @@
  * A Backbone Model for the state of an in-place editable field in the DOM.
  */
 
-(function (_, Backbone, Drupal) {
+(function (_, Backbone, Backdrop) {
 
   "use strict";
 
   /**
    * State of an in-place editable field in the DOM.
    */
-  Drupal.quickedit.FieldModel = Drupal.quickedit.BaseModel.extend({
+  Backdrop.quickedit.FieldModel = Backdrop.quickedit.BaseModel.extend({
 
     defaults: {
       // The DOM element that represents this field. It may seem bizarre to have
@@ -25,7 +25,7 @@
       // the form "<entity type>/<id>/<field name>/<language>/<view mode>[entity instance ID]",
       // e.g. "node/1/field_tags/und/full[0]".
       id: null,
-      // A Drupal.quickedit.EntityModel. Its "fields" attribute, which is a
+      // A Backdrop.quickedit.EntityModel. Its "fields" attribute, which is a
       // FieldCollection, is automatically updated to include this FieldModel.
       entity: null,
       // This field's metadata as returned by the QuickEditController::metadata().
@@ -43,7 +43,7 @@
       // during the life of a FieldModel instance.
 
       // In-place editing state of this field. Defaults to the initial state.
-      // Possible values: @see Drupal.quickedit.FieldModel.states.
+      // Possible values: @see Backdrop.quickedit.FieldModel.states.
       state: 'inactive',
       // The field is currently in the 'changed' state or one of the following
       // states in which the field is still changed.
@@ -74,8 +74,8 @@
       // Automatically generate the logical field ID.
       this.set('logicalFieldID', this.get('fieldID').split('/').slice(0, 4).join('/'));
 
-      // Call Drupal.quickedit.BaseModel's initialize() method.
-      Drupal.quickedit.BaseModel.prototype.initialize.call(this, options);
+      // Call Backdrop.quickedit.BaseModel's initialize() method.
+      Backdrop.quickedit.BaseModel.prototype.initialize.call(this, options);
     },
 
     /**
@@ -85,7 +85,7 @@
       if (this.get('state') !== 'inactive') {
         throw new Error("FieldModel cannot be destroyed if it is not inactive state.");
       }
-      Drupal.quickedit.BaseModel.prototype.destroy.call(this, options);
+      Backdrop.quickedit.BaseModel.prototype.destroy.call(this, options);
     },
 
     /**
@@ -143,7 +143,7 @@
     findOtherViewModes: function () {
       var currentField = this;
       var otherViewModes = [];
-      Drupal.quickedit.collections.fields
+      Backdrop.quickedit.collections.fields
         // Find all instances of fields that display the same logical field (same
         // entity, same field, just a different instance and maybe a different
         // view mode).
@@ -242,9 +242,9 @@
      * Indicates whether the 'from' state comes before the 'to' state.
      *
      * @param String from
-     *   One of Drupal.quickedit.FieldModel.states.
+     *   One of Backdrop.quickedit.FieldModel.states.
      * @param String to
-     *   One of Drupal.quickedit.FieldModel.states.
+     *   One of Backdrop.quickedit.FieldModel.states.
      * @return Boolean
      */
     followsStateSequence: function (from, to) {
@@ -253,8 +253,8 @@
 
   });
 
-  Drupal.quickedit.FieldCollection = Backbone.Collection.extend({
-    model: Drupal.quickedit.FieldModel
+  Backdrop.quickedit.FieldCollection = Backbone.Collection.extend({
+    model: Backdrop.quickedit.FieldModel
   });
 
-}(_, Backbone, Drupal));
+}(_, Backbone, Backdrop));

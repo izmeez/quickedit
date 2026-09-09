@@ -17,15 +17,15 @@
  *     is not yet known whether the user has permission to edit at >=1 of them.
  */
 
-(function ($, _, Backbone, Drupal, drupalSettings, JSON, storage) {
+(function ($, _, Backbone, Backdrop, backdropSettings, JSON, storage) {
 
   "use strict";
 
-  var options = $.extend(drupalSettings.quickedit,
-    // Merge strings on top of drupalSettings so that they are not mutable.
+  var options = $.extend(backdropSettings.quickedit,
+    // Merge strings on top of backdropSettings so that they are not mutable.
     {
       strings: {
-        quickEdit: Drupal.t('Quick edit')
+        quickEdit: Backdrop.t('Quick edit')
       }
     }
   );
@@ -63,7 +63,7 @@
    */
   var entityInstancesTracker = {};
 
-  Drupal.behaviors.quickedit = {
+  Backdrop.behaviors.quickedit = {
     attach: function (context) {
       // Initialize the Quick Edit app once per page load.
       $('body').once('quickedit-init', initQuickEdit);
@@ -150,15 +150,15 @@
     }
   };
 
-  Drupal.quickedit = {
-    // A Drupal.quickedit.AppView instance.
+  Backdrop.quickedit = {
+    // A Backdrop.quickedit.AppView instance.
     app: null,
 
     collections: {
-      // All in-place editable entities (Drupal.quickedit.EntityModel) on the
+      // All in-place editable entities (Backdrop.quickedit.EntityModel) on the
       // page.
       entities: null,
-      // All in-place editable fields (Drupal.quickedit.FieldModel) on the page.
+      // All in-place editable fields (Backdrop.quickedit.FieldModel) on the page.
       fields: null
     },
 
@@ -179,10 +179,10 @@
         return (key === undefined) ? metadata : metadata[key];
       },
       _prefixFieldID: function (fieldID) {
-        return 'Drupal.quickedit.metadata.' + fieldID;
+        return 'Backdrop.quickedit.metadata.' + fieldID;
       },
       _unprefixFieldID: function (fieldID) {
-        // Strip "Drupal.quickedit.metadata.", which is 21 characters long.
+        // Strip "Backdrop.quickedit.metadata.", which is 21 characters long.
         return fieldID.substring(26);
       },
       intersection: function (fieldIDs) {
@@ -195,13 +195,13 @@
 
   // Clear the Quick Edit metadata cache whenever the current user's set of
   // permissions changes.
-  var permissionsHashKey = Drupal.quickedit.metadata._prefixFieldID('permissionsHash');
+  var permissionsHashKey = Backdrop.quickedit.metadata._prefixFieldID('permissionsHash');
   var permissionsHashValue = storage.getItem(permissionsHashKey);
-  var permissionsHash = drupalSettings.quickedit.user.permissionsHash;
+  var permissionsHash = backdropSettings.quickedit.user.permissionsHash;
   if (permissionsHashValue !== permissionsHash) {
     if (typeof permissionsHash === 'string') {
       _.chain(storage).keys().each(function (key) {
-        if (key.substring(0, 26) === 'Drupal.quickedit.metadata.') {
+        if (key.substring(0, 26) === 'Backdrop.quickedit.metadata.') {
           storage.removeItem(key);
         }
       });
@@ -229,16 +229,16 @@
    *   This document's body element.
    */
   function initQuickEdit (bodyElement) {
-    Drupal.quickedit.collections.entities = new Drupal.quickedit.EntityCollection();
-    Drupal.quickedit.collections.fields = new Drupal.quickedit.FieldCollection();
+    Backdrop.quickedit.collections.entities = new Backdrop.quickedit.EntityCollection();
+    Backdrop.quickedit.collections.fields = new Backdrop.quickedit.FieldCollection();
 
     // Instantiate AppModel (application state) and AppView, which is the
     // controller of the whole in-place editing experience.
-    Drupal.quickedit.app = new Drupal.quickedit.AppView({
+    Backdrop.quickedit.app = new Backdrop.quickedit.AppView({
       el: bodyElement,
-      model: new Drupal.quickedit.AppModel(),
-      entitiesCollection: Drupal.quickedit.collections.entities,
-      fieldsCollection: Drupal.quickedit.collections.fields
+      model: new Backdrop.quickedit.AppModel(),
+      entitiesCollection: Backdrop.quickedit.collections.entities,
+      fieldsCollection: Backdrop.quickedit.collections.fields
     });
   }
 
@@ -246,11 +246,11 @@
    * Fetch the field's metadata; queue or initialize it (if EntityModel exists).
    *
    * @param DOM fieldElement
-   *   A Drupal Field API field's DOM element with a data-quickedit-field-id
+   *   A Backdrop Field API field's DOM element with a data-quickedit-field-id
    *   attribute.
    */
   function processField (fieldElement) {
-    var metadata = Drupal.quickedit.metadata;
+    var metadata = Backdrop.quickedit.metadata;
     var fieldID = fieldElement.getAttribute('data-quickedit-field-id');
     var entityID = extractEntityID(fieldID);
     // Figure out the instance ID by looking at the ancestor
@@ -288,7 +288,7 @@
 
     // If an EntityModel for this field already exists (and hence also a "Quick
     // edit" contextual link), then initialize it immediately.
-    if (Drupal.quickedit.collections.entities.findWhere({ entityID: entityID, entityInstanceID: entityInstanceID })) {
+    if (Backdrop.quickedit.collections.entities.findWhere({ entityID: entityID, entityInstanceID: entityInstanceID })) {
       initializeField(fieldElement, fieldID, entityID, entityInstanceID);
     }
     // Otherwise: queue the field. It is now available to be set up when its
@@ -311,7 +311,7 @@
    *   The field's entity's instance ID.
    */
   function initializeField (fieldElement, fieldID, entityID, entityInstanceID) {
-    var entity = Drupal.quickedit.collections.entities.findWhere({
+    var entity = Backdrop.quickedit.collections.entities.findWhere({
       entityID: entityID,
       entityInstanceID: entityInstanceID
     });
@@ -319,17 +319,17 @@
     $(fieldElement).addClass('quickedit-field');
 
     // The FieldModel stores the state of an in-place editable entity field.
-    var field = new Drupal.quickedit.FieldModel({
+    var field = new Backdrop.quickedit.FieldModel({
       el: fieldElement,
       fieldID: fieldID,
       id: fieldID + '[' + entity.get('entityInstanceID') + ']',
       entity: entity,
-      metadata: Drupal.quickedit.metadata.get(fieldID),
-      acceptStateChange: _.bind(Drupal.quickedit.app.acceptEditorStateChange, Drupal.quickedit.app)
+      metadata: Backdrop.quickedit.metadata.get(fieldID),
+      acceptStateChange: _.bind(Backdrop.quickedit.app.acceptEditorStateChange, Backdrop.quickedit.app)
     });
 
     // Track all fields on the page.
-    Drupal.quickedit.collections.fields.add(field);
+    Backdrop.quickedit.collections.fields.add(field);
   }
 
   /**
@@ -347,11 +347,11 @@
       var fieldElementsWithoutMetadata = _.pluck(fieldsMetadataQueue, 'el');
       var entityIDs = _.uniq(_.pluck(fieldsMetadataQueue, 'entityID'), true);
       // Ensure we only request entityIDs for which we don't have metadata yet.
-      entityIDs = _.difference(entityIDs, Drupal.quickedit.metadata.intersection(entityIDs));
+      entityIDs = _.difference(entityIDs, Backdrop.quickedit.metadata.intersection(entityIDs));
       fieldsMetadataQueue = [];
 
       $.ajax({
-        url: drupalSettings.quickedit.metadataURL,
+        url: backdropSettings.quickedit.metadataURL,
         type: 'POST',
         data: {
           'fields[]': fieldIDs,
@@ -361,7 +361,7 @@
         success: function(results) {
           // Store the metadata.
           _.each(results, function (fieldMetadata, fieldID) {
-            Drupal.quickedit.metadata.add(fieldID, fieldMetadata);
+            Backdrop.quickedit.metadata.add(fieldID, fieldMetadata);
           });
 
           callback(fieldElementsWithoutMetadata);
@@ -381,18 +381,18 @@
    *   have been inserted into the DOM. i.e. they may still be loading.
    */
   function loadMissingEditors (callback) {
-    var loadedEditors = _.keys(Drupal.quickedit.editors);
+    var loadedEditors = _.keys(Backdrop.quickedit.editors);
     var missingEditors = [];
-    Drupal.quickedit.collections.fields.each(function (fieldModel) {
-      var metadata = Drupal.quickedit.metadata.get(fieldModel.get('fieldID'));
+    Backdrop.quickedit.collections.fields.each(function (fieldModel) {
+      var metadata = Backdrop.quickedit.metadata.get(fieldModel.get('fieldID'));
       if (metadata.access && _.indexOf(loadedEditors, metadata.editor) === -1) {
         missingEditors.push(metadata.editor);
         // Set a stub, to prevent subsequent calls to loadMissingEditors() from
         // loading the same in-place editor again. Loading an in-place editor
         // requires talking to a server, to download its JavaScript, then
-        // executing its JavaScript, and only then its Drupal.quickedit.editors
+        // executing its JavaScript, and only then its Backdrop.quickedit.editors
         // entry will be set.
-        Drupal.quickedit.editors[metadata.editor] = false;
+        Backdrop.quickedit.editors[metadata.editor] = false;
       }
     });
     missingEditors = _.uniq(missingEditors);
@@ -404,11 +404,11 @@
     // @todo Simplify this once https://drupal.org/node/1533366 lands.
     // @see https://drupal.org/node/2029999.
     var id = 'quickedit-load-editors';
-    // Create a temporary element to be able to use Drupal.ajax.
+    // Create a temporary element to be able to use Backdrop.ajax.
     var $el = $('<div id="' + id + '" class="element-hidden"></div>').appendTo('body');
-    // Create a Drupal.ajax instance to load the form.
-    var loadEditorsAjax = new Drupal.ajax(id, $el, {
-      url: drupalSettings.quickedit.attachmentsURL,
+    // Create a Backdrop.ajax instance to load the form.
+    var loadEditorsAjax = new Backdrop.ajax(id, $el, {
+      url: backdropSettings.quickedit.attachmentsURL,
       event: 'quickedit-internal.quickedit',
       submit: { 'editors[]': missingEditors },
       // No progress indicator.
@@ -418,10 +418,10 @@
     loadEditorsAjax.commands = {};
     // The above work-around prevents the prototype implementations from being
     // called, so we must alias any and all of the commands that might be called.
-    loadEditorsAjax.commands.settings = Drupal.ajax.prototype.commands.settings;
+    loadEditorsAjax.commands.settings = Backdrop.ajax.prototype.commands.settings;
     // Implement a scoped insert AJAX command: calls the callback after all AJAX
     // command functions have been executed (hence the deferred calling).
-    var realInsert = Drupal.ajax.prototype.commands.insert;
+    var realInsert = Backdrop.ajax.prototype.commands.insert;
     loadEditorsAjax.commands.insert = function (ajax, response, status) {
       _.defer(callback);
       realInsert(ajax, response, status);
@@ -454,7 +454,7 @@
    *   Returns false otherwise.
    */
   function initializeEntityContextualLink (contextualLink) {
-    var metadata = Drupal.quickedit.metadata;
+    var metadata = Backdrop.quickedit.metadata;
     // Check if the user has permission to edit at least one of them.
     function hasFieldWithPermission (fieldIDs) {
       for (var i = 0; i < fieldIDs.length; i++) {
@@ -486,17 +486,17 @@
     // the current user may edit in-place; instantiate EntityModel,
     // EntityDecorationView and ContextualLinkView.
     else if (hasFieldWithPermission(fieldIDs)) {
-      var entityModel = new Drupal.quickedit.EntityModel({
+      var entityModel = new Backdrop.quickedit.EntityModel({
         el: contextualLink.region,
         entityID: contextualLink.entityID,
         entityInstanceID: contextualLink.entityInstanceID,
         id: contextualLink.entityID + '[' + contextualLink.entityInstanceID + ']',
-        label: Drupal.quickedit.metadata.get(contextualLink.entityID, 'label')
+        label: Backdrop.quickedit.metadata.get(contextualLink.entityID, 'label')
       });
-      Drupal.quickedit.collections.entities.add(entityModel);
+      Backdrop.quickedit.collections.entities.add(entityModel);
       // Create an EntityDecorationView associated with the root DOM node of the
       // entity.
-      var entityDecorationView = new Drupal.quickedit.EntityDecorationView({
+      var entityDecorationView = new Backdrop.quickedit.EntityDecorationView({
         el: contextualLink.region,
         model: entityModel
       });
@@ -512,10 +512,10 @@
       // to get a one-time use version of the function.
       var initContextualLink = _.once(function () {
         var $links = $(contextualLink.el);
-        var contextualLinkView = new Drupal.quickedit.ContextualLinkView($.extend({
+        var contextualLinkView = new Backdrop.quickedit.ContextualLinkView($.extend({
           el: $('<li class="quick-quickedit"><a href="" role="button" aria-pressed="false"></a></li>').prependTo($links),
           model: entityModel,
-          appModel: Drupal.quickedit.app.model
+          appModel: Backdrop.quickedit.app.model
         }, options));
         entityModel.set('contextualLinkView', contextualLinkView);
       });
@@ -541,7 +541,7 @@
    * ContextualLinkView) and FieldModels, as well as the corresponding queues.
    *
    * After EntityModels, FieldModels must also be deleted, because it is possible
-   * in Drupal for a field DOM element to exist outside of the entity DOM element,
+   * in Backdrop for a field DOM element to exist outside of the entity DOM element,
    * e.g. when viewing the full node, the title of the node is not rendered within
    * the node (the entity) but as the page title.
    *
@@ -553,7 +553,7 @@
   function deleteContainedModelsAndQueues($context) {
     $context.find('[data-quickedit-entity-id]').addBack('[data-quickedit-entity-id]').each(function (index, entityElement) {
       // Delete entity model.
-      var entityModel = Drupal.quickedit.collections.entities.findWhere({el: entityElement});
+      var entityModel = Backdrop.quickedit.collections.entities.findWhere({el: entityElement});
       if (entityModel) {
         var contextualLinkView = entityModel.get('contextualLinkView');
         contextualLinkView.remove();
@@ -572,7 +572,7 @@
 
     $context.find('[data-quickedit-field-id]').addBack('[data-quickedit-field-id]').each(function (index, fieldElement) {
       // Delete field models.
-      Drupal.quickedit.collections.fields.chain()
+      Backdrop.quickedit.collections.fields.chain()
         .filter(function (fieldModel) { return fieldModel.get('el') === fieldElement; })
         .invoke('destroy');
 
@@ -585,4 +585,4 @@
     });
   }
 
-})(jQuery, _, Backbone, Drupal, Drupal.settings, window.JSON, window.sessionStorage);
+})(jQuery, _, Backbone, Backdrop, Backdrop.settings, window.JSON, window.sessionStorage);

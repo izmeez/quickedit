@@ -3,14 +3,14 @@
  * Provides utility functions for Quick Edit.
  */
 
-(function ($, Drupal, drupalSettings) {
+(function ($, Backdrop, backdropSettings) {
 
   "use strict";
 
-  Drupal.quickedit.util = Drupal.quickedit.util || {};
+  Backdrop.quickedit.util = Backdrop.quickedit.util || {};
 
-  Drupal.quickedit.util.constants = {};
-  Drupal.quickedit.util.constants.transitionEnd = "transitionEnd.quickedit webkitTransitionEnd.quickedit transitionend.quickedit msTransitionEnd.quickedit oTransitionEnd.quickedit";
+  Backdrop.quickedit.util.constants = {};
+  Backdrop.quickedit.util.constants.transitionEnd = "transitionEnd.quickedit webkitTransitionEnd.quickedit transitionend.quickedit msTransitionEnd.quickedit oTransitionEnd.quickedit";
 
   /**
    * Converts a field id into a formatted url path.
@@ -21,9 +21,9 @@
    *   The Controller route for field processing. For example,
    *   '/quickedit/form/%21entity_type/%21id/%21field_name/%21langcode/%21view_mode'.
    */
-  Drupal.quickedit.util.buildUrl = function (id, urlFormat) {
+  Backdrop.quickedit.util.buildUrl = function (id, urlFormat) {
     var parts = id.split('/');
-    return Drupal.formatString(decodeURIComponent(urlFormat), {
+    return Backdrop.formatString(decodeURIComponent(urlFormat), {
       '!entity_type': parts[0],
       '!id'         : parts[1],
       '!field_name' : parts[2],
@@ -40,8 +40,8 @@
    * @param String message
    *   The message to use in the modal dialog.
    */
-  Drupal.quickedit.util.networkErrorModal = function (title, message) {
-    var networkErrorModal = new Drupal.quickedit.ModalView({
+  Backdrop.quickedit.util.networkErrorModal = function (title, message) {
+    var networkErrorModal = new Backdrop.quickedit.ModalView({
       title: title,
       dialogClass: 'quickedit-network-error',
       message: message,
@@ -50,7 +50,7 @@
           action: 'ok',
           type: 'submit',
           classes: 'action-save quickedit-button',
-          label: Drupal.t('OK')
+          label: Backdrop.t('OK')
         }
       ],
       callback: function () { return; }
@@ -58,17 +58,17 @@
     networkErrorModal.render();
   };
 
-  Drupal.quickedit.util.form = {
+  Backdrop.quickedit.util.form = {
 
     /**
      * Loads a form, calls a callback to insert.
      *
-     * Leverages Drupal.ajax' ability to have scoped (per-instance) command
+     * Leverages Backdrop.ajax' ability to have scoped (per-instance) command
      * implementations to be able to call a callback.
      *
      * @param Object options
      *   An object with the following keys:
-     *    - jQuery $el: (required) DOM element necessary for Drupal.ajax to
+     *    - jQuery $el: (required) DOM element necessary for Backdrop.ajax to
      *      perform AJAX commands.
      *    - String fieldID: (required) the field ID that uniquely identifies the
      *      field for which this form will be loaded.
@@ -85,9 +85,9 @@
       var $el = options.$el;
       var fieldID = options.fieldID;
 
-      // Create a Drupal.ajax instance to load the form.
-      var formLoaderAjax = new Drupal.ajax(fieldID, $el, {
-        url: Drupal.quickedit.util.buildUrl(fieldID, drupalSettings.quickedit.fieldFormURL),
+      // Create a Backdrop.ajax instance to load the form.
+      var formLoaderAjax = new Backdrop.ajax(fieldID, $el, {
+        url: Backdrop.quickedit.util.buildUrl(fieldID, backdropSettings.quickedit.fieldFormURL),
         event: 'quickedit-internal.quickedit',
         submit: {
           nocssjs : options.nocssjs,
@@ -98,13 +98,13 @@
           $el.off('quickedit-internal.quickedit');
 
           // Show a modal to inform the user of the network error.
-          var fieldLabel = Drupal.quickedit.metadata.get(fieldID, 'label');
-          var message = Drupal.t('Could not load the form for <q>@field-label</q>, either due to a website problem or a network connection problem.<br>Please try again.', { '@field-label' : fieldLabel });
-          Drupal.quickedit.util.networkErrorModal(Drupal.t('Sorry!'), message);
+          var fieldLabel = Backdrop.quickedit.metadata.get(fieldID, 'label');
+          var message = Backdrop.t('Could not load the form for <q>@field-label</q>, either due to a website problem or a network connection problem.<br>Please try again.', { '@field-label' : fieldLabel });
+          Backdrop.quickedit.util.networkErrorModal(Backdrop.t('Sorry!'), message);
 
           // Change the state back to "candidate", to allow the user to start
           // in-place editing of the field again.
-          var fieldModel = Drupal.quickedit.app.model.get('activeField');
+          var fieldModel = Backdrop.quickedit.app.model.get('activeField');
           fieldModel.set('state', 'candidate');
         }
       });
@@ -112,8 +112,8 @@
       formLoaderAjax.commands = {};
       // The above work-around prevents the prototype implementations from being
       // called, so we must alias any and all of the commands that might be called.
-      formLoaderAjax.commands.settings = Drupal.ajax.prototype.commands.settings;
-      formLoaderAjax.commands.insert = Drupal.ajax.prototype.commands.insert;
+      formLoaderAjax.commands.settings = Backdrop.ajax.prototype.commands.settings;
+      formLoaderAjax.commands.insert = Backdrop.ajax.prototype.commands.insert;
       // Implement a scoped quickeditFieldForm AJAX command: calls the callback.
       formLoaderAjax.commands.quickeditFieldForm = function (ajax, response, status) {
         callback(response.data, ajax);
@@ -125,7 +125,7 @@
     },
 
     /**
-     * Creates a Drupal.ajax instance that is used to save a form.
+     * Creates a Backdrop.ajax instance that is used to save a form.
      *
      * @param Object options
      *   An object with the following keys:
@@ -133,8 +133,8 @@
      *      returned (necessary when the form is invisible to the user).
      *    - other_view_modes: (required) array containing view mode IDs (of other
      *      instances of this field on the page).
-     * @return Drupal.ajax
-     *   A Drupal.ajax instance.
+     * @return Backdrop.ajax
+     *   A Backdrop.ajax instance.
      */
     ajaxifySaving: function (options, $submit) {
       // Re-wire the form to handle submit.
@@ -147,7 +147,7 @@
           nocssjs : options.nocssjs,
           other_view_modes : options.other_view_modes
         },
-        // Reimplement the success handler to ensure Drupal.attachBehaviors() does
+        // Reimplement the success handler to ensure Backdrop.attachBehaviors() does
         // not get called on the form.
         success: function (response, status) {
           for (var i in response) {
@@ -158,14 +158,14 @@
         }
       };
 
-      return new Drupal.ajax($submit.attr('id'), $submit[0], settings);
+      return new Backdrop.ajax($submit.attr('id'), $submit[0], settings);
     },
 
     /**
-     * Cleans up the Drupal.ajax instance that is used to save the form.
+     * Cleans up the Backdrop.ajax instance that is used to save the form.
      *
-     * @param Drupal.ajax ajax
-     *   A Drupal.ajax that was returned by Drupal.quickedit.form.ajaxifySaving().
+     * @param Backdrop.ajax ajax
+     *   A Backdrop.ajax that was returned by Backdrop.quickedit.form.ajaxifySaving().
      */
     unajaxifySaving: function (ajax) {
       $(ajax.element).off('click.quickedit');
@@ -176,7 +176,7 @@
   /**
    * Limits the invocations of a function in a given time frame.
    *
-   * Adapted from underscore.js with the addition Drupal namespace.
+   * Adapted from underscore.js with the addition Backdrop namespace.
    *
    * The debounce function wrapper should be used sparingly. One clear use case
    * is limiting the invocation of a callback attached to the window resize event.
@@ -196,7 +196,7 @@
    *
    * @see Drupal 8's core/misc/debounce.js.
    */
-  Drupal.quickedit.util.debounce = function (func, wait, immediate) {
+  Backdrop.quickedit.util.debounce = function (func, wait, immediate) {
     var timeout, result;
     return function () {
       var context = this;
@@ -217,4 +217,4 @@
     };
   };
 
-})(jQuery, Drupal, Drupal.settings);
+})(jQuery, Backdrop, Backdrop.settings);

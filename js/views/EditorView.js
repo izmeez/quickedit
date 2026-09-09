@@ -3,7 +3,7 @@
  * An abstract Backbone View that controls an in-place editor.
  */
 
-(function ($, Backbone, Drupal) {
+(function ($, Backbone, Backdrop) {
 
   "use strict";
 
@@ -13,12 +13,12 @@
    * Specific in-place editor implementations should subclass (extend) this View
    * and override whichever method they deem necessary to override.
    *
-   * Look at Drupal.quickedit.editors.form and
-   * Drupal.quickedit.editors.plain_text for examples.
+   * Look at Backdrop.quickedit.editors.form and
+   * Backdrop.quickedit.editors.plain_text for examples.
    *
-   * @see Drupal.quickedit.EditorModel
+   * @see Backdrop.quickedit.EditorModel
    */
-  Drupal.quickedit.EditorView = Backbone.View.extend({
+  Backdrop.quickedit.EditorView = Backbone.View.extend({
 
     /**
      * {@inheritdoc}
@@ -29,14 +29,14 @@
      *
      * If you override this method, you should call this method (the parent
      * class' initialize()) first, like this:
-     *   Drupal.quickedit.EditorView.prototype.initialize.call(this, options);
+     *   Backdrop.quickedit.EditorView.prototype.initialize.call(this, options);
      *
-     * For an example, @see Drupal.quickedit.editors.plain_text.
+     * For an example, @see Backdrop.quickedit.editors.plain_text.
      *
      * @param Object options
      *   An object with the following keys:
-     *   - Drupal.quickedit.EditorModel model: the in-place editor state model
-     *   - Drupal.quickedit.FieldModel fieldModel: the field model
+     *   - Backdrop.quickedit.EditorModel model: the in-place editor state model
+     *   - Backdrop.quickedit.FieldModel fieldModel: the field model
      */
     initialize: function (options) {
       this.fieldModel = options.fieldModel;
@@ -63,7 +63,7 @@
      * e.g. using a WYSIWYG editor on a body field should happen on the DOM
      * element containing the text itself, not on the field wrapper.
      *
-     * For example, @see Drupal.quickedit.editors.plain_text.
+     * For example, @see Backdrop.quickedit.editors.plain_text.
      *
      * @return jQuery
      *   A jQuery-wrapped DOM element.
@@ -90,10 +90,10 @@
     /**
      * Determines the actions to take given a change of state.
      *
-     * @param Drupal.quickedit.FieldModel fieldModel
+     * @param Backdrop.quickedit.FieldModel fieldModel
      * @param String state
      *   The state of the associated field. One of
-     *   Drupal.quickedit.FieldModel.states.
+     *   Backdrop.quickedit.FieldModel.states.
      */
     stateChange: function (fieldModel, state) {
       var from = fieldModel.previous('state');
@@ -208,11 +208,11 @@
       };
 
       var self = this;
-      Drupal.quickedit.util.form.load(formOptions, function (form, ajax) {
+      Backdrop.quickedit.util.form.load(formOptions, function (form, ajax) {
         // Create a backstage area for storing forms that are hidden from view
         // (hence "backstage" — since the editing doesn't happen in the form, it
         // happens "directly" in the content, the form is only used for saving).
-        var $backstage = $(Drupal.theme('quickeditBackstage', { id: backstageId })).appendTo('body');
+        var $backstage = $(Backdrop.theme('quickeditBackstage', { id: backstageId })).appendTo('body');
         // Hidden forms are stuffed into the backstage container for this field.
         var $form = $(form).appendTo($backstage);
         // Disable the browser's HTML5 validation; we only care about server-
@@ -221,10 +221,10 @@
         // forms.)
         $form.prop('novalidate', true);
         var $submit = $form.find('.quickedit-form-submit');
-        self.formSaveAjax = Drupal.quickedit.util.form.ajaxifySaving(formOptions, $submit);
+        self.formSaveAjax = Backdrop.quickedit.util.form.ajaxifySaving(formOptions, $submit);
 
         function removeHiddenForm () {
-          Drupal.quickedit.util.form.unajaxifySaving(self.formSaveAjax);
+          Backdrop.quickedit.util.form.unajaxifySaving(self.formSaveAjax);
           delete self.formSaveAjax;
           $backstage.remove();
         }
@@ -297,4 +297,4 @@
 
   });
 
-}(jQuery, Backbone, Drupal));
+}(jQuery, Backbone, Backdrop));

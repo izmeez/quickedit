@@ -3,11 +3,11 @@
  * A Backbone View that decorates the in-place edited element.
  */
 
-(function ($, Backbone, Drupal) {
+(function ($, Backbone, Backdrop) {
 
   "use strict";
 
-  Drupal.quickedit.FieldDecorationView = Backbone.View.extend({
+  Backdrop.quickedit.FieldDecorationView = Backbone.View.extend({
 
     _widthAttributeIsEmpty: null,
 
@@ -24,7 +24,7 @@
      *
      * @param Object options
      *   An object with the following keys:
-     *   - Drupal.quickedit.EditorView editorView: the editor object view.
+     *   - Backdrop.quickedit.EditorView editorView: the editor object view.
      */
     initialize: function (options) {
       this.editorView = options.editorView;
@@ -46,10 +46,10 @@
     /**
      * Determines the actions to take given a change of state.
      *
-     * @param Drupal.quickedit.FieldModel model
+     * @param Backdrop.quickedit.FieldModel model
      * @param String state
      *   The state of the associated field. One of
-     *   Drupal.quickedit.FieldModel.states.
+     *   Backdrop.quickedit.FieldModel.states.
      */
     stateChange: function (model, state) {
       var from = model.previous('state');
@@ -328,4 +328,4 @@
 
   });
 
-})(jQuery, Backbone, Drupal);
+})(jQuery, Backbone, Backdrop);

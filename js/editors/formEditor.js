@@ -3,16 +3,16 @@
  * Form-based in-place editor. Works for any field type.
  */
 
-(function ($, Drupal) {
+(function ($, Backdrop) {
 
   "use strict";
 
-  Drupal.quickedit.editors.form = Drupal.quickedit.EditorView.extend({
+  Backdrop.quickedit.editors.form = Backdrop.quickedit.EditorView.extend({
 
     // Tracks the form container DOM element that is used while in-place editing.
     $formContainer: null,
 
-    // Holds the Drupal.ajax object
+    // Holds the Backdrop.ajax object
     formSaveAjax: null,
 
     /**
@@ -69,9 +69,9 @@
       var id = 'quickedit-form-for-' + fieldModel.id.replace(/[\/\[\]]/g, '_');
 
       // Render form container.
-      var $formContainer = this.$formContainer = $(Drupal.theme('quickeditFormContainer', {
+      var $formContainer = this.$formContainer = $(Backdrop.theme('quickeditFormContainer', {
         id: id,
-        loadingMsg: Drupal.t('Loading…')
+        loadingMsg: Backdrop.t('Loading…')
       }));
       $formContainer
         .find('.quickedit-form')
@@ -102,8 +102,8 @@
         // for an entity that this needs to happen: precisely now!
         reset: !fieldModel.get('entity').get('inTempStore')
       };
-      Drupal.quickedit.util.form.load(formOptions, function (form, ajax) {
-        Drupal.ajax.prototype.commands.insert(ajax, {
+      Backdrop.quickedit.util.form.load(formOptions, function (form, ajax) {
+        Backdrop.ajax.prototype.commands.insert(ajax, {
           data: form,
           selector: '#' + id + ' .placeholder'
         });
@@ -144,7 +144,7 @@
 
       delete this.formSaveAjax;
       // Allow form widgets to detach properly.
-      Drupal.detachBehaviors(this.$formContainer.get(0), null, 'unload');
+      Backdrop.detachBehaviors(this.$formContainer.get(0), null, 'unload');
       this.$formContainer
         .off('change.quickedit', ':input')
         .off('keypress.quickedit', 'input')
@@ -162,12 +162,12 @@
       var fieldModel = this.fieldModel;
 
       function cleanUpAjax () {
-        Drupal.quickedit.util.form.unajaxifySaving(formSaveAjax);
+        Backdrop.quickedit.util.form.unajaxifySaving(formSaveAjax);
         formSaveAjax = null;
       }
 
       // Create an AJAX object for the form associated with the field.
-      var formSaveAjax = Drupal.quickedit.util.form.ajaxifySaving({
+      var formSaveAjax = Backdrop.quickedit.util.form.ajaxifySaving({
         nocssjs: false,
         other_view_modes: fieldModel.findOtherViewModes()
       }, $submit);
@@ -204,7 +204,7 @@
       // command is invoked only if validation errors exist and then it runs
       // before quickeditFieldFormValidationErrors().
       formSaveAjax.commands.quickeditFieldForm = function (ajax, response, status) {
-        Drupal.ajax.prototype.commands.insert(ajax, {
+        Backdrop.ajax.prototype.commands.insert(ajax, {
           data: response.data,
           selector: '#' + $formContainer.attr('id') + ' form'
         });
@@ -227,4 +227,4 @@
     }
   });
 
-})(jQuery, Drupal);
+})(jQuery, Backdrop);

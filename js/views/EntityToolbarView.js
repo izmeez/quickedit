@@ -2,11 +2,11 @@
  * @file
  * A Backbone View that provides an entity level toolbar.
  */
-(function ($, _, Backbone, Drupal, debounce) {
+(function ($, _, Backbone, Backdrop, debounce) {
 
   "use strict";
 
-  Drupal.quickedit.EntityToolbarView = Backbone.View.extend({
+  Backdrop.quickedit.EntityToolbarView = Backbone.View.extend({
 
     _fieldToolbarRoot: null,
 
@@ -68,8 +68,8 @@
         // The fence will define a area on the screen that the entity toolbar
         // will be position within.
         if ($body.children('#quickedit-toolbar-fence').length === 0) {
-          this.$fence = $(Drupal.theme('quickeditEntityToolbarFence'))
-            // @todo: Figure out the Drupal 7 alternative for Drupal.displace()?
+          this.$fence = $(Backdrop.theme('quickeditEntityToolbarFence'))
+            // @todo: Figure out the Backdrop alternative for Drupal.displace()?
             //        See https://drupal.org/node/1956804.
             //.css(Drupal.displace())
             .appendTo($body);
@@ -95,7 +95,7 @@
           // EntityToolbarView manages this visual element.
           $button
             .removeClass('action-saving icon-throbber icon-end')
-            .text(Drupal.t('Save'))
+            .text(Backdrop.t('Save'))
             .removeAttr('disabled')
             .attr('aria-hidden', !isDirty);
           break;
@@ -103,7 +103,7 @@
         case 'committing':
           $button
             .addClass('action-saving icon-throbber icon-end')
-            .text(Drupal.t('Saving'))
+            .text(Backdrop.t('Saving'))
             .attr('disabled', 'disabled');
           break;
         default:
@@ -140,9 +140,9 @@
     /**
      * Determines the actions to take given a change of state.
      *
-     * @param Drupal.quickedit.FieldModel model
+     * @param Backdrop.quickedit.FieldModel model
      * @param String state
-     *   The state of the associated field. One of Drupal.quickedit.FieldModel.states.
+     *   The state of the associated field. One of Backdrop.quickedit.FieldModel.states.
      */
     fieldStateChange: function (model, state) {
       switch (state) {
@@ -187,7 +187,7 @@
             break;
           case 1:
             // Position against a form container.
-            activeField = Drupal.quickedit.app.model.get('activeField');
+            activeField = Backdrop.quickedit.app.model.get('activeField');
             of = activeField && activeField.editorView && activeField.editorView.$formContainer && activeField.editorView.$formContainer.find('.quickedit-form');
             break;
           case 2:
@@ -199,7 +199,7 @@
             break;
           case 3:
             // Position against a highlighted field.
-            highlightedField = Drupal.quickedit.app.model.get('highlightedField');
+            highlightedField = Backdrop.quickedit.app.model.get('highlightedField');
             of = highlightedField && highlightedField.editorView && highlightedField.editorView.getEditedElement();
             delay = 250;
             break;
@@ -350,18 +350,18 @@
      * Builds the entity toolbar HTML; attaches to DOM; sets starting position.
      */
     buildToolbarEl: function () {
-      var $toolbar = $(Drupal.theme('quickeditEntityToolbar', {
+      var $toolbar = $(Backdrop.theme('quickeditEntityToolbar', {
         id: 'quickedit-entity-toolbar'
       }));
 
       $toolbar
         .find('.quickedit-toolbar-entity')
         // Append the "ops" toolgroup into the toolbar.
-        .prepend(Drupal.theme('quickeditToolgroup', {
+        .prepend(Backdrop.theme('quickeditToolgroup', {
           classes: ['ops'],
           buttons: [
             {
-              label: Drupal.t('Save'),
+              label: Backdrop.t('Save'),
               type: 'submit',
               classes: 'action-save quickedit-button icon',
               attributes: {
@@ -369,7 +369,7 @@
               }
             },
             {
-              label: Drupal.t('Close'),
+              label: Backdrop.t('Close'),
               classes: 'action-cancel quickedit-button icon icon-close icon-only'
             }
           ]
@@ -405,20 +405,20 @@
       var entityLabel = this.model.get('label');
 
       // Label of an active field, if it exists.
-      var activeField = Drupal.quickedit.app.model.get('activeField');
+      var activeField = Backdrop.quickedit.app.model.get('activeField');
       var activeFieldLabel = activeField && activeField.get('metadata').label;
       // Label of a highlighted field, if it exists.
-      var highlightedField = Drupal.quickedit.app.model.get('highlightedField');
+      var highlightedField = Backdrop.quickedit.app.model.get('highlightedField');
       var highlightedFieldLabel = highlightedField && highlightedField.get('metadata').label;
       // The label is constructed in a priority order.
       if (activeFieldLabel) {
-        label = Drupal.theme('quickeditEntityToolbarLabel', {
+        label = Backdrop.theme('quickeditEntityToolbarLabel', {
           entityLabel: entityLabel,
           fieldLabel: activeFieldLabel
         });
       }
       else if (highlightedFieldLabel) {
-        label = Drupal.theme('quickeditEntityToolbarLabel', {
+        label = Backdrop.theme('quickeditEntityToolbarLabel', {
           entityLabel: entityLabel,
           fieldLabel: highlightedFieldLabel
         });
@@ -482,4 +482,4 @@
 
   });
 
-})(jQuery, _, Backbone, Drupal, Drupal.quickedit.util.debounce);
+})(jQuery, _, Backbone, Backdrop, Backdrop.quickedit.util.debounce);

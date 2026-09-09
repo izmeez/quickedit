@@ -3,11 +3,11 @@
  * A Backbone View that provides a dynamic contextual link.
  */
 
-(function ($, Backbone, Drupal) {
+(function ($, Backbone, Backdrop) {
 
   "use strict";
 
-  Drupal.quickedit.ContextualLinkView = Backbone.View.extend({
+  Backdrop.quickedit.ContextualLinkView = Backbone.View.extend({
 
      events: function () {
       // Prevents delay and simulated mouse events.
@@ -29,8 +29,8 @@
      *
      * @param Object options
      *   An object with the following keys:
-     *   - Drupal.quickedit.EntityModel model: the associated entity's model
-     *   - Drupal.quickedit.AppModel appModel: the application state model
+     *   - Backdrop.quickedit.EntityModel model: the associated entity's model
+     *   - Backdrop.quickedit.AppModel appModel: the application state model
      *   - strings: the strings for the "Quick edit" link
      */
     initialize: function (options) {
@@ -56,4 +56,4 @@
 
   });
 
-})(jQuery, Backbone, Drupal);
+})(jQuery, Backbone, Backdrop);

@@ -3,7 +3,7 @@
  * Provides overridable theme functions for all of Quick Edit's client-side HTML.
  */
 
-(function ($, Drupal) {
+(function ($, Backdrop) {
 
   "use strict";
 
@@ -16,7 +16,7 @@
    * @return String
    *   The corresponding HTML.
    */
-  Drupal.theme.prototype.quickeditBackstage = function (settings) {
+  Backdrop.theme.prototype.quickeditBackstage = function (settings) {
     var html = '';
     html += '<div id="' + settings.id + '" />';
     return html;
@@ -31,7 +31,7 @@
    * @return String
    *   The corresponding HTML.
    */
-  Drupal.theme.prototype.quickeditEntityToolbar = function (settings) {
+  Backdrop.theme.prototype.quickeditEntityToolbar = function (settings) {
     var html = '';
     html += '<div id="' + settings.id + '" class="quickedit quickedit-toolbar-container clearfix">';
     html += '<i class="quickedit-toolbar-pointer"></i>';
@@ -54,7 +54,7 @@
    * @return String
    *   The corresponding HTML.
    */
-  Drupal.theme.prototype.quickeditEntityToolbarLabel = function (settings) {
+  Backdrop.theme.prototype.quickeditEntityToolbarLabel = function (settings) {
     return '<span class="field">' + settings.fieldLabel + '</span>' + settings.entityLabel;
   };
 
@@ -64,7 +64,7 @@
    * @return String
    *   The corresponding HTML.
    */
-  Drupal.theme.prototype.quickeditEntityToolbarFence = function () {
+  Backdrop.theme.prototype.quickeditEntityToolbarFence = function () {
     return '<div id="quickedit-toolbar-fence" />';
   };
 
@@ -77,7 +77,7 @@
    * @return
    *   The corresponding HTML.
    */
-  Drupal.theme.prototype.quickeditFieldToolbar = function (settings) {
+  Backdrop.theme.prototype.quickeditFieldToolbar = function (settings) {
     return '<div id="' + settings.id + '" />';
   };
 
@@ -88,11 +88,11 @@
    *   An object with the following keys:
    *   - String id: (optional) the id of the toolgroup
    *   - String classes: the class of the toolgroup.
-   *   - Array buttons: @see Drupal.theme.prototype.quickeditButtons().
+   *   - Array buttons: @see Backdrop.theme.prototype.quickeditButtons().
    * @return String
    *   The corresponding HTML.
    */
-  Drupal.theme.prototype.quickeditToolgroup = function (settings) {
+  Backdrop.theme.prototype.quickeditToolgroup = function (settings) {
     // Classes.
     var classes = (settings.classes || []);
     classes.unshift('quickedit-toolgroup');
@@ -102,7 +102,7 @@
       html += ' id="' + settings.id + '"';
     }
     html += '>';
-    html += Drupal.theme('quickeditButtons', { buttons: settings.buttons });
+    html += Backdrop.theme('quickeditButtons', { buttons: settings.buttons });
     html += '</div>';
     return html;
   };
@@ -122,7 +122,7 @@
    * @return String
    *   The corresponding HTML.
    */
-  Drupal.theme.prototype.quickeditButtons = function (settings) {
+  Backdrop.theme.prototype.quickeditButtons = function (settings) {
     var html = '';
     for (var i = 0; i < settings.buttons.length; i++) {
       var button = settings.buttons[i];
@@ -156,7 +156,7 @@
    * @return String
    *   The corresponding HTML.
    */
-  Drupal.theme.prototype.quickeditFormContainer = function (settings) {
+  Backdrop.theme.prototype.quickeditFormContainer = function (settings) {
     var html = '';
     html += '<div id="' + settings.id + '" class="quickedit-form-container">';
     html += '  <div class="quickedit-form">';
@@ -179,7 +179,7 @@
    * @return String
    *   The corresponding HTML.
    */
-  Drupal.theme.prototype.quickeditModal = function () {
+  Backdrop.theme.prototype.quickeditModal = function () {
     var classes = 'quickedit-animate-slow quickedit-animate-invisible quickedit-animate-delay-veryfast';
     var html = '';
     html += '<div id="quickedit_modal" class="' + classes + '" role="dialog">';
@@ -189,4 +189,4 @@
     return html;
   };
 
-})(jQuery, Drupal);
+})(jQuery, Backdrop);

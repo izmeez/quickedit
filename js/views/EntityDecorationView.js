@@ -3,11 +3,11 @@
  * A Backbone view that decorates the in-place editable entity.
  */
 
-(function (Drupal, $, Backbone) {
+(function (Backdrop, $, Backbone) {
 
   "use strict";
 
-  Drupal.quickedit.EntityDecorationView = Backbone.View.extend({
+  Backdrop.quickedit.EntityDecorationView = Backbone.View.extend({
 
     /**
      * {@inheritdoc}
@@ -35,4 +35,4 @@
 
   });
 
-}(Drupal, jQuery, Backbone));
+}(Backdrop, jQuery, Backbone));

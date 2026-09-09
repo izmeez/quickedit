@@ -3,11 +3,11 @@
  * contentEditable-based in-place editor for plain text content.
  */
 
-(function ($, _, Drupal) {
+(function ($, _, Backdrop) {
 
   "use strict";
 
-  Drupal.quickedit.editors.plain_text = Drupal.quickedit.EditorView.extend({
+  Backdrop.quickedit.editors.plain_text = Backdrop.quickedit.EditorView.extend({
 
     // Stores the textual DOM element that is being in-place edited.
     $textElement: null,
@@ -16,7 +16,7 @@
      * {@inheritdoc}
      */
     initialize: function (options) {
-      Drupal.quickedit.EditorView.prototype.initialize.call(this, options);
+      Backdrop.quickedit.EditorView.prototype.initialize.call(this, options);
 
       var editorModel = this.model;
       var fieldModel = this.fieldModel;
@@ -113,4 +113,4 @@
 
   });
 
-})(jQuery, _, Drupal);
+})(jQuery, _, Backdrop);

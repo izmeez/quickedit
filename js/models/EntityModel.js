@@ -1,11 +1,11 @@
-(function (_, $, Backbone, Drupal, drupalSettings) {
+(function (_, $, Backbone, Backdrop, backdropSettings) {
 
   "use strict";
 
   /**
    * State of an in-place editable entity in the DOM.
    */
-  Drupal.quickedit.EntityModel = Drupal.quickedit.BaseModel.extend({
+  Backdrop.quickedit.EntityModel = Backdrop.quickedit.BaseModel.extend({
 
     defaults: {
       // The DOM element that represents this entity. It may seem bizarre to
@@ -22,7 +22,7 @@
       id: null,
       // The label of the entity.
       label: null,
-      // A Drupal.quickedit.FieldCollection for all fields of this entity.
+      // A Backdrop.quickedit.FieldCollection for all fields of this entity.
       fields: null,
 
       // The attributes below are stateful. The ones above will never change
@@ -57,7 +57,7 @@
      * {@inheritdoc}
      */
     initialize: function () {
-      this.set('fields', new Drupal.quickedit.FieldCollection());
+      this.set('fields', new Backdrop.quickedit.FieldCollection());
 
       // Respond to entity state changes.
       this.listenTo(this, 'change:state', this.stateChange);
@@ -66,16 +66,16 @@
       // fields.
       this.listenTo(this.get('fields'), 'change:state', this.fieldStateChange);
 
-      // Call Drupal.quickedit.BaseModel's initialize() method.
-      Drupal.quickedit.BaseModel.prototype.initialize.call(this);
+      // Call Backdrop.quickedit.BaseModel's initialize() method.
+      Backdrop.quickedit.BaseModel.prototype.initialize.call(this);
     },
 
     /**
      * Updates FieldModels' states when an EntityModel change occurs.
      *
-     * @param Drupal.quickedit.EntityModel entityModel
+     * @param Backdrop.quickedit.EntityModel entityModel
      * @param String state
-     *   The state of the associated entity. One of Drupal.quickedit.EntityModel.states.
+     *   The state of the associated entity. One of Backdrop.quickedit.EntityModel.states.
      * @param Object options
      */
     stateChange: function (entityModel, state, options) {
@@ -119,7 +119,7 @@
           // stored in TempStore.
           fields.chain()
             .filter(function (fieldModel) {
-              return _.intersection([fieldModel.get('state')], Drupal.quickedit.app.changedFieldStates).length;
+              return _.intersection([fieldModel.get('state')], Backdrop.quickedit.app.changedFieldStates).length;
             })
             .each(function (fieldModel) {
               fieldModel.set('state', 'saving');
@@ -146,7 +146,7 @@
             this.set('state', 'opened', {confirming: true});
             // An action in reaction to state change must be deferred.
             _.defer(function () {
-              Drupal.quickedit.app.confirmEntityDeactivation(entityModel);
+              Backdrop.quickedit.app.confirmEntityDeactivation(entityModel);
             });
           }
           else {
@@ -191,9 +191,9 @@
      *
      * Helper function.
      *
-     * @param Drupal.quickedit.EntityModel entityModel
+     * @param Backdrop.quickedit.EntityModel entityModel
      *   The model of the entity for which a field's state attribute has changed.
-     * @param Drupal.quickedit.FieldModel fieldModel
+     * @param Backdrop.quickedit.FieldModel fieldModel
      *   The model of the field whose state attribute has changed.
      *
      * @see fieldStateChange()
@@ -228,10 +228,10 @@
     /**
      * Reacts to state changes in this entity's fields.
      *
-     * @param Drupal.quickedit.FieldModel fieldModel
+     * @param Backdrop.quickedit.FieldModel fieldModel
      *   The model of the field whose state attribute changed.
      * @param String state
-     *   The state of the associated field. One of Drupal.quickedit.FieldModel.states.
+     *   The state of the associated field. One of Backdrop.quickedit.FieldModel.states.
      */
     fieldStateChange: function (fieldModel, state) {
       var entityModel = this;
@@ -260,7 +260,7 @@
           // A state change in reaction to another state change must be deferred.
           _.defer(function () {
             entityModel.set('state', 'opened', {
-              'accept-field-states': Drupal.quickedit.app.readyFieldStates
+              'accept-field-states': Backdrop.quickedit.app.readyFieldStates
             });
           });
           break;
@@ -298,7 +298,7 @@
           // Attempt to save the entity. If the entity's fields are not yet all in
           // a ready state, the save will not be processed.
           var options = {
-            'accept-field-states': Drupal.quickedit.app.readyFieldStates
+            'accept-field-states': Backdrop.quickedit.app.readyFieldStates
           };
           if (entityModel.set('isCommitting', true, options)) {
             entityModel.save({
@@ -315,8 +315,8 @@
                 // "Save" button again.
                 entityModel.set('state', 'opened', { reason: 'networkerror' });
                 // Show a modal to inform the user of the network error.
-                var message = Drupal.t('Your changes to <q>@entity-title</q> could not be saved, either due to a website problem or a network connection problem.<br>Please try again.', { '@entity-title' : entityModel.get('label') });
-                Drupal.quickedit.util.networkErrorModal(Drupal.t('Sorry!'), message);
+                var message = Backdrop.t('Your changes to <q>@entity-title</q> could not be saved, either due to a website problem or a network connection problem.<br>Please try again.', { '@entity-title' : entityModel.get('label') });
+                Backdrop.quickedit.util.networkErrorModal(Backdrop.t('Sorry!'), message);
               }
             });
           }
@@ -328,7 +328,7 @@
           // A state change in reaction to another state change must be deferred.
           _.defer(function() {
             entityModel.set('state', 'closing', {
-              'accept-field-states': Drupal.quickedit.app.readyFieldStates
+              'accept-field-states': Backdrop.quickedit.app.readyFieldStates
             });
           });
           break;
@@ -360,16 +360,16 @@
       // @todo Simplify this once https://drupal.org/node/1533366 lands.
       // @see https://drupal.org/node/2029999.
       var id = 'quickedit-save-entity';
-      // Create a temporary element to be able to use Drupal.ajax.
+      // Create a temporary element to be able to use Backdrop.ajax.
       var $el = $('#quickedit-entity-toolbar').find('.action-save'); // This is the span element inside the button.
-      // Create a Drupal.ajax instance to save the entity.
-      var entitySaverAjax = new Drupal.ajax(id, $el, {
-        url: Drupal.quickedit.util.buildUrl(entityModel.get('entityID'), drupalSettings.quickedit.entitySaveURL),
+      // Create a Backdrop.ajax instance to save the entity.
+      var entitySaverAjax = new Backdrop.ajax(id, $el, {
+        url: Backdrop.quickedit.util.buildUrl(entityModel.get('entityID'), backdropSettings.quickedit.entitySaveURL),
         event: 'quickedit-save.quickedit',
         progress: { type: 'none' },
         error: function () {
           $el.off('quickedit-save.quickedit');
-          // Let the Drupal.quickedit.EntityModel Backbone model's error() method
+          // Let the Backdrop.quickedit.EntityModel Backbone model's error() method
           // handle errors.
           options.error.call(entityModel);
         }
@@ -514,7 +514,7 @@
      * {@inheritdoc}
      */
     destroy: function (options) {
-      Drupal.quickedit.BaseModel.prototype.destroy.call(this, options);
+      Backdrop.quickedit.BaseModel.prototype.destroy.call(this, options);
 
       this.stopListening();
 
@@ -592,9 +592,9 @@
      * Indicates whether the 'from' state comes before the 'to' state.
      *
      * @param String from
-     *   One of Drupal.quickedit.EntityModel.states.
+     *   One of Backdrop.quickedit.EntityModel.states.
      * @param String to
-     *   One of Drupal.quickedit.EntityModel.states.
+     *   One of Backdrop.quickedit.EntityModel.states.
      * @return Boolean
      */
     followsStateSequence: function (from, to) {
@@ -603,8 +603,8 @@
 
   });
 
-  Drupal.quickedit.EntityCollection = Backbone.Collection.extend({
-    model: Drupal.quickedit.EntityModel
+  Backdrop.quickedit.EntityCollection = Backbone.Collection.extend({
+    model: Backdrop.quickedit.EntityModel
   });
 
-}(_, jQuery, Backbone, Drupal, Drupal.settings));
+}(_, jQuery, Backbone, Backdrop, Backdrop.settings));

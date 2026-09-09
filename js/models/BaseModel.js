@@ -7,7 +7,7 @@
 
   "use strict";
 
-  Drupal.quickedit.BaseModel = Backbone.Model.extend({
+  Backdrop.quickedit.BaseModel = Backbone.Model.extend({
 
     /**
      * {@inheritdoc}

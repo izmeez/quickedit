@@ -2,14 +2,14 @@
  * @file
  * A Backbone Model for the state of an in-place editor.
  *
- * @see Drupal.quickedit.EditorView
+ * @see Backdrop.quickedit.EditorView
  */
 
-(function (Backbone, Drupal) {
+(function (Backbone, Backdrop) {
 
   "use strict";
 
-  Drupal.quickedit.EditorModel = Backbone.Model.extend({
+  Backdrop.quickedit.EditorModel = Backbone.Model.extend({
 
     defaults: {
       // Not the full HTML representation of this field, but the "actual"
@@ -24,4 +24,4 @@
 
   });
 
-}(Backbone, Drupal));
+}(Backbone, Backdrop));

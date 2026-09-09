@@ -3,11 +3,11 @@
  * A Backbone View that provides an interactive toolbar (1 per in-place editor).
  */
 
-(function ($, _, Backbone, Drupal) {
+(function ($, _, Backbone, Backdrop) {
 
   "use strict";
 
-  Drupal.quickedit.FieldToolbarView = Backbone.View.extend({
+  Backdrop.quickedit.FieldToolbarView = Backbone.View.extend({
 
     // The edited element, as indicated by EditorView.getEditedElement().
     $editedElement: null,
@@ -36,7 +36,7 @@
      */
     render: function () {
       // Render toolbar and set it as the view's element.
-      this.setElement($(Drupal.theme('quickeditFieldToolbar', {
+      this.setElement($(Backdrop.theme('quickeditFieldToolbar', {
         id: this._id
       })));
 
@@ -49,10 +49,10 @@
     /**
      * Determines the actions to take given a change of state.
      *
-     * @param Drupal.quickedit.FieldModel model
+     * @param Backdrop.quickedit.FieldModel model
      * @param String state
      *   The state of the associated field. One of
-     *   Drupal.quickedit.FieldModel.states.
+     *   Backdrop.quickedit.FieldModel.states.
      */
     stateChange: function (model, state) {
       var from = model.previous('state');
@@ -100,12 +100,12 @@
      */
     insertWYSIWYGToolGroups: function () {
       this.$el
-        .append(Drupal.theme('quickeditToolgroup', {
+        .append(Backdrop.theme('quickeditToolgroup', {
           id: this.getFloatedWysiwygToolgroupId(),
           classes: ['wysiwyg-floated', 'quickedit-animate-slow', 'quickedit-animate-invisible', 'quickedit-animate-delay-veryfast'],
           buttons: []
         }))
-        .append(Drupal.theme('quickeditToolgroup', {
+        .append(Backdrop.theme('quickeditToolgroup', {
           id: this.getMainWysiwygToolgroupId(),
           classes: ['wysiwyg-main', 'quickedit-animate-slow', 'quickedit-animate-invisible', 'quickedit-animate-delay-veryfast'],
           buttons: []
@@ -173,8 +173,8 @@
       var $group = this._find(toolgroup);
       // Attach a transitionEnd event handler to the toolbar group so that update
       // events can be triggered after the animations have ended.
-      $group.on(Drupal.quickedit.util.constants.transitionEnd, function (event) {
-        $group.off(Drupal.quickedit.util.constants.transitionEnd);
+      $group.on(Backdrop.quickedit.util.constants.transitionEnd, function (event) {
+        $group.off(Backdrop.quickedit.util.constants.transitionEnd);
       });
       // The call to remove the class and start the animation must be started in
       // the next animation frame or the event handler attached above won't be
@@ -186,4 +186,4 @@
 
   });
 
-})(jQuery, _, Backbone, Drupal);
+})(jQuery, _, Backbone, Backdrop);

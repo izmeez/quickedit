@@ -1,17 +1,17 @@
 /**
  * @file
- * CKEditor-based in-place editor for processed text content in Drupal.
+ * CKEditor-based in-place editor for processed text content in Backdrop.
  */
-(function ($, _, Drupal, drupalSettings, debounce) {
+(function ($, _, Backdrop, backdropSettings, debounce) {
 
   "use strict";
 
   // This value needs to be set before ckeditor.js is loaded (when ckeditor.js
   // is loaded dynamically and when using jQuery <1.9).
   // @see http://bugs.jquery.com/ticket/11795#comment:20
-  window.CKEDITOR_BASEPATH = Drupal.settings.quickedit.ckeditor.basePath;
+  window.CKEDITOR_BASEPATH = Backdrop.settings.quickedit.ckeditor.basePath;
 
-  Drupal.quickedit.editors.ckeditor = Drupal.quickedit.EditorView.extend({
+  Backdrop.quickedit.editors.ckeditor = Backdrop.quickedit.EditorView.extend({
 
     // The CKEditor settings for this field's text format.
     ckeditorSettings: null,
@@ -26,10 +26,10 @@
      * {@inheritdoc}
      */
     initialize: function (options) {
-      Drupal.quickedit.EditorView.prototype.initialize.call(this, options);
+      Backdrop.quickedit.EditorView.prototype.initialize.call(this, options);
 
-      var metadata = Drupal.quickedit.metadata.get(this.fieldModel.get('fieldID'), 'custom');
-      // @todo use Drupal.settings.quickedit.ckeditor.editorSettings[this.textFormat] ???
+      var metadata = Backdrop.quickedit.metadata.get(this.fieldModel.get('fieldID'), 'custom');
+      // @todo use Backdrop.settings.quickedit.ckeditor.editorSettings[this.textFormat] ???
       this.ckeditorSettings = metadata.ckeditorSettings;
       this.textFormatHasTransformations = metadata.formatHasTransformations;
 
@@ -165,14 +165,14 @@
      * @param Function callback
      *   A callback function that will receive the untransformed text.
      *
-     * @see \Drupal\editor\Ajax\GetUntransformedTextCommand
+     * @see \Backdrop\editor\Ajax\GetUntransformedTextCommand
      */
     _getUntransformedText: function (callback) {
       var fieldID = this.fieldModel.get('fieldID');
 
-      // Create a Drupal.ajax instance to load the form.
-      var textLoaderAjax = new Drupal.ajax(fieldID, this.$el, {
-        url: Drupal.quickedit.util.buildUrl(fieldID, drupalSettings.quickedit.ckeditor.getUntransformedTextURL),
+      // Create a Backdrop.ajax instance to load the form.
+      var textLoaderAjax = new Backdrop.ajax(fieldID, this.$el, {
+        url: Backdrop.quickedit.util.buildUrl(fieldID, backdropSettings.quickedit.ckeditor.getUntransformedTextURL),
         event: 'quickedit-internal.quickedit-ckeditor',
         submit: { nocssjs : true },
         progress: { type : null } // No progress indicator.
@@ -283,4 +283,4 @@
 
   });
 
-})(jQuery, _, Drupal, Drupal.settings, Drupal.quickedit.util.debounce);
+})(jQuery, _, Backdrop, Backdrop.settings, Backdrop.quickedit.util.debounce);

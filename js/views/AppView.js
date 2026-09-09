@@ -2,10 +2,10 @@
  * @file
  * A Backbone View that controls the overall "in-place editing application".
  *
- * @see Drupal.quickedit.AppModel
+ * @see Backdrop.quickedit.AppModel
  */
 
-(function ($, _, Backbone, Drupal) {
+(function ($, _, Backbone, Backdrop) {
 
   "use strict";
 
@@ -17,20 +17,20 @@
   // makes it impossible for Quick Edit to know where to restore the original HTML.
   var reload = false;
 
-  Drupal.quickedit.AppView = Backbone.View.extend({
+  Backdrop.quickedit.AppView = Backbone.View.extend({
 
     /**
      * {@inheritdoc}
      *
      * @param Object options
      *   An object with the following keys:
-     *   - Drupal.quickedit.AppModel model: the application state model
-     *   - Drupal.quickedit.EntityCollection entitiesCollection: all on-page entities
-     *   - Drupal.quickedit.FieldCollection fieldsCollection: all on-page fields
+     *   - Backdrop.quickedit.AppModel model: the application state model
+     *   - Backdrop.quickedit.EntityCollection entitiesCollection: all on-page entities
+     *   - Backdrop.quickedit.FieldCollection fieldsCollection: all on-page fields
      */
     initialize: function (options) {
       // AppView's configuration for handling states.
-      // @see Drupal.quickedit.FieldModel.states
+      // @see Backdrop.quickedit.FieldModel.states
       this.activeFieldStates = ['activating', 'active'];
       this.singleFieldStates = ['highlighted', 'activating', 'active'];
       this.changedFieldStates = ['changed', 'saving', 'saved', 'invalid'];
@@ -56,10 +56,10 @@
     /**
      * Handles setup/teardown and state changes when the active entity changes.
      *
-     * @param Drupal.quickedit.EntityModel entityModel
+     * @param Backdrop.quickedit.EntityModel entityModel
      *   An instance of the EntityModel class.
      * @param String state
-     *   The state of the associated field. One of Drupal.quickedit.EntityModel.states.
+     *   The state of the associated field. One of Backdrop.quickedit.EntityModel.states.
      */
     appStateChange: function (entityModel, state) {
       var app = this;
@@ -68,7 +68,7 @@
         case 'launching':
           reload = false;
           // First, create an entity toolbar view.
-          entityToolbarView = new Drupal.quickedit.EntityToolbarView({
+          entityToolbarView = new Backdrop.quickedit.EntityToolbarView({
             model: entityModel,
             appModel: this.model
           });
@@ -117,7 +117,7 @@
      *   The new state.
      * @param null|Object context
      *   The context that is trying to trigger the state change.
-     * @param Drupal.quickedit.FieldModel fieldModel
+     * @param Backdrop.quickedit.FieldModel fieldModel
      *   The fieldModel to which this change applies.
      */
     acceptEditorStateChange: function (from, to, context, fieldModel) {
@@ -135,7 +135,7 @@
         // In general, enforce the states sequence. Disallow going back from a
         // "later" state to an "earlier" state, except in explicitly allowed
         // cases.
-        if (!Drupal.quickedit.FieldModel.followsStateSequence(from, to)) {
+        if (!Backdrop.quickedit.FieldModel.followsStateSequence(from, to)) {
           accept = false;
           // Allow: activating/active -> candidate.
           // Necessary to stop editing a field.
@@ -242,7 +242,7 @@
      *
      * Must happen before the fieldModel's state is changed to 'candidate'.
      *
-     * @param Drupal.quickedit.FieldModel fieldModel
+     * @param Backdrop.quickedit.FieldModel fieldModel
      *   The field for which an in-place editor must be set up.
      */
     setupEditor: function (fieldModel) {
@@ -253,8 +253,8 @@
       var fieldToolbarRoot = entityToolbarView.getToolbarRoot();
       // Create in-place editor.
       var editorName = fieldModel.get('metadata').editor;
-      var editorModel = new Drupal.quickedit.EditorModel();
-      var editorView = new Drupal.quickedit.editors[editorName]({
+      var editorModel = new Backdrop.quickedit.EditorModel();
+      var editorView = new Backdrop.quickedit.editors[editorName]({
         el: $(fieldModel.get('el')),
         model: editorModel,
         fieldModel: fieldModel
@@ -263,7 +263,7 @@
       // Create in-place editor's toolbar for this field — stored inside the
       // entity toolbar, the entity toolbar will position itself appropriately
       // above (or below) the edited element.
-      var toolbarView = new Drupal.quickedit.FieldToolbarView({
+      var toolbarView = new Backdrop.quickedit.FieldToolbarView({
         el: fieldToolbarRoot,
         model: fieldModel,
         $editedElement: $(editorView.getEditedElement()),
@@ -273,7 +273,7 @@
 
       // Create decoration for edited element: padding if necessary, sets classes
       // on the element to style it according to the current state.
-      var decorationView = new Drupal.quickedit.FieldDecorationView({
+      var decorationView = new Backdrop.quickedit.FieldDecorationView({
         el: $(editorView.getEditedElement()),
         model: fieldModel,
         editorView: editorView
@@ -291,7 +291,7 @@
      *
      * Must happen after the fieldModel's state is changed to 'inactive'.
      *
-     * @param Drupal.quickedit.FieldModel fieldModel
+     * @param Backdrop.quickedit.FieldModel fieldModel
      *   The field for which an in-place editor must be torn down.
      */
     teardownEditor: function (fieldModel) {
@@ -347,21 +347,21 @@
 
       // Only instantiate if there isn't a modal instance visible yet.
       if (!this.model.get('activeModal')) {
-        discardDialog = new Drupal.quickedit.ModalView({
-          title: Drupal.t('Discard changes?'),
+        discardDialog = new Backdrop.quickedit.ModalView({
+          title: Backdrop.t('Discard changes?'),
           dialogClass: 'quickedit-discard-modal',
-          message: Drupal.t('You have unsaved changes'),
+          message: Backdrop.t('You have unsaved changes'),
           buttons: [
             {
               action: 'save',
               type: 'submit',
               classes: 'action-save quickedit-button',
-              label: Drupal.t('Save'),
+              label: Backdrop.t('Save'),
             },
             {
               action: 'discard',
               classes: 'action-cancel quickedit-button',
-              label: Drupal.t('Discard changes'),
+              label: Backdrop.t('Discard changes'),
             }
           ],
           callback: closeDiscardDialog,
@@ -375,9 +375,9 @@
     /**
      * Reacts to field state changes; tracks global state.
      *
-     * @param Drupal.quickedit.FieldModel fieldModel
+     * @param Backdrop.quickedit.FieldModel fieldModel
      * @param String state
-     *   The state of the associated field. One of Drupal.quickedit.FieldModel.states.
+     *   The state of the associated field. One of Backdrop.quickedit.FieldModel.states.
      */
     editorStateChange: function (fieldModel, state) {
       var from = fieldModel.previous('state');
@@ -407,7 +407,7 @@
     /**
      * Render an updated field (a field whose 'html' attribute changed).
      *
-     * @param Drupal.quickedit.FieldModel fieldModel
+     * @param Backdrop.quickedit.FieldModel fieldModel
      *   The FieldModel whose 'html' attribute changed.
      * @param String html
      *   The updated 'html' attribute.
@@ -452,7 +452,7 @@
 
             // Attach behaviors again to the modified piece of HTML; this will create
             // a new field model and call rerenderedFieldToCandidate() with it.
-            Drupal.attachBehaviors($context.get(0));
+            Backdrop.attachBehaviors($context.get(0));
           });
         }
       });
@@ -461,7 +461,7 @@
     /**
      * Propagates the changes to an updated field to all instances of that field.
      *
-     * @param Drupal.quickedit.FieldModel updatedField
+     * @param Backdrop.quickedit.FieldModel updatedField
      *   The FieldModel whose 'html' attribute changed.
      * @param String html
      *   The updated 'html' attribute.
@@ -471,7 +471,7 @@
      *     occurred because of the propagation of changes to another instance of
      *     this field.
      *
-     * @see Drupal.quickedit.AppView.renderUpdatedField()
+     * @see Backdrop.quickedit.AppView.renderUpdatedField()
      */
     propagateUpdatedField: function (updatedField, html, options) {
       // Don't propagate field updates that themselves were caused by propagation.
@@ -480,7 +480,7 @@
       }
 
       var htmlForOtherViewModes = updatedField.get('htmlForOtherViewModes');
-      Drupal.quickedit.collections.fields
+      Backdrop.quickedit.collections.fields
         // Find all instances of fields that display the same logical field (same
         // entity, same field, just a different instance and maybe a different
         // view mode).
@@ -514,11 +514,11 @@
      *
      * This happens when a field was modified, saved and hence rerendered.
      *
-     * @param Drupal.quickedit.FieldModel fieldModel
+     * @param Backdrop.quickedit.FieldModel fieldModel
      *   A field that was just added to the collection of fields.
      */
     rerenderedFieldToCandidate: function (fieldModel) {
-      var activeEntity = Drupal.quickedit.collections.entities.findWhere({isActive: true});
+      var activeEntity = Backdrop.quickedit.collections.entities.findWhere({isActive: true});
 
       // Early-return if there is no active entity.
       if (!activeEntity) {
@@ -536,7 +536,7 @@
      * EntityModel Collection change handler, called on change:isActive, enforces
      * a single active entity.
      *
-     * @param Drupal.quickedit.EntityModel
+     * @param Backdrop.quickedit.EntityModel
      *   The entityModel instance whose active state has changed.
      */
     enforceSingleActiveEntity: function (changedEntityModel) {
@@ -557,4 +557,4 @@
 
   });
 
-}(jQuery, _, Backbone, Drupal));
+}(jQuery, _, Backbone, Backdrop));
