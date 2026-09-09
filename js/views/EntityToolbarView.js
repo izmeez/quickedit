@@ -278,8 +278,7 @@
        */
       function positionToolbar () {
         that.$el
-          // @see js/ducktape.position.js: modified version of jQuery UI Position!
-          .position_quickedit({
+          .position({
             my: edge + ' bottom',
             // Move the toolbar 1px towards the start edge of the 'of' element,
             // plus any horizontal padding that may have been added to the element

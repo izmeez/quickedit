@@ -171,7 +171,9 @@ From a Drupal 8 perspective:
     enable block.module in tests.
 14. Drupal 7 ships with jQuery UI Position 1.8.7; Edit needs 1.10. Requiring an
     updated jQuery UI causes a lot of compatibility problems in general, so Edit
-    ships with a monkey-patched version of it. See js/ducktape.position.js.
+    ships with a monkey-patched version of it. (Backdrop port: not applicable.
+    Backdrop core ships jQuery UI 1.14.1 natively, so the monkey-patched copy
+    was deleted rather than ported; see js/views/EntityToolbarView.js.)
 15. Contextual links have a different structure in Drupal 7 versus 8. Various
     selectors were adjusted.
 16. There's a bizarre bug in jQuery 1.4.4 (the version of jQuery that Drupal 7

@@ -1,15 +1,12 @@
 name = Quick Edit
 description = In-place content editing.
-package = Spark
-core = 7.x
+package = Fields
+backdrop = 1.x
 
 dependencies[] = contextual
-dependencies[] = entity
-dependencies[] = field (>=7.22)
+dependencies[] = field
 dependencies[] = filter
-dependencies[] = libraries (>=2.x)
-dependencies[] = ctools
 
-test_dependencies[] = ckeditor
+test_dependencies[] = ckeditor5
 
 files[] = quickedit.test

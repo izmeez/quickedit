@@ -205,17 +205,18 @@ function quickedit_theme() {
 }
 
 /**
- * Implements hook_library().
+ * Implements hook_library_info().
  */
-function quickedit_library() {
-  $path = drupal_get_path('module', 'quickedit');
+function quickedit_library_info() {
+  $path = backdrop_get_path('module', 'quickedit');
+  $info = system_get_info('module', 'quickedit');
   $options = array(
     'scope' => 'footer',
   );
   $libraries['quickedit'] = array(
     'title' => 'Quick Edit: in-place editing',
-    'website' => 'http://drupal.org/project/quickedit',
-    'version' => VERSION,
+    'website' => 'https://backdropcms.org/project/quickedit',
+    'version' => $info['version'],
     'js' => array(
       // Core.
       $path . '/js/quickedit.js' => $options,
@@ -237,8 +238,6 @@ function quickedit_library() {
       $path . '/js/views/ModalView.js' => $options,
       // Other.
       $path . '/js/theme.js' => $options,
-      // Monkey-patch in jQuery UI 1.10 Position at $.fn.position_quickedit.
-      $path . '/js/jquery/ducktape.position.js' => $options,
       // Basic settings.
       array(
         'data' => array(
@@ -267,14 +266,14 @@ function quickedit_library() {
       array('quickedit', 'backbone'),
       array('system', 'jquery.form'),
       array('system', 'ui.position'),
-      array('system', 'drupal.form'),
-      array('system', 'drupal.ajax'),
+      array('system', 'backdrop.form'),
+      array('system', 'backdrop.ajax'),
     ),
   );
 
   $libraries['quickedit.inPlaceEditor.form'] = array(
     'title' => 'Form in-place editor',
-    'version' => VERSION,
+    'version' => $info['version'],
     'js' => array(
       $path . '/js/editors/formEditor.js' => $options,
     ),
@@ -284,7 +283,7 @@ function quickedit_library() {
   );
   $libraries['quickedit.inPlaceEditor.plainText'] = array(
     'title' => 'Plain text in-place editor',
-    'version' => VERSION,
+    'version' => $info['version'],
     'js' => array(
       $path . '/js/editors/plainTextEditor.js' => $options,
     ),
@@ -293,44 +292,29 @@ function quickedit_library() {
     ),
   );
 
-  if (module_exists('ckeditor')) {
-    $libraries['quickedit.inPlaceEditor.ckeditor'] = array(
-      'title' => 'CKEditor formatted text in-place editor',
-      'version' => VERSION,
-      'js' => array(
-        $path . '/js/editors/formattedTextEditor.js' => array('weight' => 3) + $options,
-        array(
-          'type' => 'setting',
-          'data' => array(
-            'quickedit' => array(
-              'ckeditor' => array(
-                'getUntransformedTextURL' => url('quickedit/ckeditor/!entity_type/!id/!field_name/!langcode/!view_mode'),
-              ),
-            )
-          )
-        ),
-        // CKEditor.module sadly does not implement hook_library(), so we must
-        // indicate here that we want it to be loaded.
-        ckeditor_library_path('url') . '/ckeditor/ckeditor.js' => array('weight' => 4) +  $options,
-      ),
-      'dependencies' => array(
-        array('quickedit', 'quickedit'),
-        array('system', 'drupal.ajax'),
-      ),
-    );
-  }
+  // FormattedText in-place editor (CKEditor 5, TinyMCE, or any other module
+  // implementing Backdrop.editors[format.editor]). Added in a later commit.
 
-  module_load_include('inc', 'quickedit', 'includes/libraries');
+  $libraries['underscore'] = array(
+    'title' => 'Underscore.js',
+    'website' => 'https://underscorejs.org',
+    'version' => '1.13.6',
+    'js' => array(
+      $path . '/libraries/underscore/underscore.js' => array('group' => JS_LIBRARY, 'weight' => -20) + $options,
+    ),
+  );
 
-  $libraries['underscore'] = _quickedit_convert_libraries_to_library(libraries_detect('underscore'), array(
-    'group' => JS_LIBRARY,
-    'weight' => -20,
-  ));
-
-  $libraries['backbone'] = _quickedit_convert_libraries_to_library(libraries_detect('backbone'), array(
-    'group' => JS_LIBRARY,
-    'weight' => -19,
-  ));
+  $libraries['backbone'] = array(
+    'title' => 'Backbone.js',
+    'website' => 'https://backbonejs.org',
+    'version' => '1.6.0',
+    'js' => array(
+      $path . '/libraries/backbone/backbone.js' => array('group' => JS_LIBRARY, 'weight' => -19) + $options,
+    ),
+    'dependencies' => array(
+      array('quickedit', 'underscore'),
+    ),
+  );
 
   return $libraries;
 }
@@ -693,37 +677,6 @@ function quickedit_module_implements_alter(&$implementations, $hook) {
 }
 
 /**
- * Implements hook_library_alter().
- *
- * Backport a couple of things from jQuery that are required by CreateJS/VIE.
- */
-function quickedit_library_alter(&$libraries, $module) {
-  $jquery_version = &drupal_static(__FUNCTION__, NULL);
-  if ($module == 'system') {
-    $jquery_version = $libraries['jquery']['version'];
-  }
-  if ($jquery_version && $module == 'quickedit') {
-    $path = drupal_get_path('module', 'quickedit');
-    // If the version of jQuery is old, we need to add `addBack`.
-    if ($jquery_version < '1.8') {
-      $libraries['quickedit']['js'][$path . '/js/jquery/ducktape.addback.js'] = array('group' => JS_LIBRARY);
-    }
-    // If the version of jQuery is old, we need to add `on` and `off`.
-    if ($jquery_version < '1.7') {
-      $libraries['quickedit']['js'][$path . '/js/jquery/ducktape.events.js'] = array('group' => JS_LIBRARY);
-    }
-    // If the version of jQuery is old, we need to add `prop`.
-    if ($jquery_version < '1.6') {
-      $libraries['quickedit']['js'][$path . '/js/jquery/ducktape.prop.js'] = array('group' => JS_LIBRARY);
-    }
-    // If the version of jQuery is old, we need to add `deferred`.
-    if ($jquery_version < '1.5') {
-      $libraries['quickedit']['js'][$path . '/js/jquery/ducktape.deferred.js'] = array('group' => JS_LIBRARY);
-    }
-  }
-}
-
-/**
  * Implements hook_field_formatter_info_alter().
  *
  * Quick Edit extends the field formatter info hook metadata with the following
@@ -795,140 +748,6 @@ function theme_quickedit_wrap_content_region($variables) {
   return '<div data-quickedit-content-region-start></div>' . $element['#children'] . '<div data-quickedit-content-region-end></div>';
 }
 
-/**
- * Implements hook_libraries_info().
- *
- * @see Libraries module.
- */
-function quickedit_libraries_info() {
-  module_load_include('inc', 'quickedit', 'includes/libraries');
-
-  $libraries = array();
-
-  $common = array(
-    'version callback' => '_quickedit_libraries_get_version',
-    'variant order' => array('minified', 'source'),
-  );
-
-  $libraries['underscore'] = array(
-    'name' => 'Underscore',
-    'vendor url' => 'http://documentcloud.github.io/backbone/',
-    'download url' => 'https://github.com/jashkenas/underscore/archive/1.5.2.zip',
-    'version arguments' => array(
-      'variants' => array(
-        'source' => array(
-          'file' => 'underscore.js',
-          // @todo Document an actual example version string.
-          'pattern' => '#VERSION *\W *[\'\"]{1}(.*?)[\'\"]{1}#',
-          // In the unminified Underscore.js 1.5.2, the version is defined on
-          // line 68.
-          'lines' => 100,
-        ),
-        'minified' => array(
-          'file' => 'underscore-min.js',
-          'pattern' => '#VERSION *\W *[\'\"]{1}(.*?)[\'\"]{1}#',
-        ),
-      ),
-    ),
-    'versions' => array(
-      // Means ">=1.5.0": matches 1.5.0, 1.5.2, etc.
-      '1.5.0' => array(
-        'variants' => array(
-          'source' => array(
-            'files' => array(
-              'js' => array(
-                'underscore.js',
-              ),
-            ),
-            // Without a variant callback, the variant is assumed to be
-            // installed.
-            'variant callback' => '_quickedit_libraries_variant_exists',
-            'variant arguments' => array('underscore.js'),
-          ),
-          'minified' => array(
-            'files' => array(
-              'js' => array(
-                'underscore-min.js',
-              ),
-            ),
-            // Without a variant callback, the variant is assumed to be
-            // installed.
-            'variant callback' => '_quickedit_libraries_variant_exists',
-            'variant arguments' => array('underscore-min.js'),
-          ),
-        ),
-      ),
-    ),
-  );
-  $libraries['underscore'] += $common;
-
-  $libraries['backbone'] = array(
-    'name' => 'Backbone',
-    'vendor url' => 'http://documentcloud.github.io/backbone/',
-    'download url' => 'https://github.com/jashkenas/backbone/archive/1.1.0.zip',
-    'version arguments' => array(
-      'variants' => array(
-        'source' => array(
-          'file' => 'backbone.js',
-          // @todo Document an actual example version string.
-          'pattern' => '#VERSION *\W *[\'\"]{1}(.*?)[\'\"]{1}#',
-          // In the unminified Backbone.js 1.1.0, the version is defined on line
-          // 38.
-          'lines' => 50,
-        ),
-        'minified' => array(
-          'file' => 'backbone-min.js',
-          'pattern' => '#VERSION *\W *[\'\"]{1}(.*?)[\'\"]{1}#',
-        ),
-      ),
-    ),
-    'versions' => array(
-      // Means ">=1.0.0": matches 1.0.0, 1.1.0, etc.
-      '1.0.0' => array(
-        'variants' => array(
-          'source' => array(
-            'name' => 'Backbone',
-            'files' => array(
-              'js' => array(
-                'backbone.js',
-              ),
-            ),
-            // Without a variant callback, the variant is assumed to be
-            // installed.
-            'variant callback' => '_quickedit_libraries_variant_exists',
-            'variant arguments' => array('backbone.js'),
-            'dependencies' => array('underscore (>=1.5.0)'),
-          ),
-          'minified' => array(
-            'name' => 'Backbone',
-            'files' => array(
-              'js' => array(
-                'backbone-min.js',
-              ),
-            ),
-            // Without a variant callback, the variant is assumed to be
-            // installed.
-            'variant callback' => '_quickedit_libraries_variant_exists',
-            'variant arguments' => array('backbone-min.js'),
-            'dependencies' => array('underscore (>=1.5.0)'),
-          ),
-        ),
-      ),
-    ),
-  );
-  $libraries['backbone'] += $common;
-
-  return $libraries;
-}
-
-/**
- * Implement hook_libraries_info_alter().
- */
-function quickedit_libraries_info_alter(&$info) {
-  // underscore.module also declares library information for the underscore
-  // library, but does not include the 'variant order' key.
-  $info['underscore']['variant order'] = array('minified', 'source');
-}
 
 /**
  * Generates an identifier to store an entity in TempStore while editing.
@@ -971,9 +790,9 @@ function _quickedit_entity_save_to_tempstore($entity_type, $entity_id, $entity) 
  * @see https://drupal.org/node/2149261#comment-8290547
  */
 function quickedit_css_alter(&$css) {
-  $bartik_style_css = drupal_get_path('theme', 'bartik') . '/css/style.css';
+  $bartik_style_css = backdrop_get_path('theme', 'bartik') . '/css/style.css';
   if (isset($css[$bartik_style_css])) {
-    $bartik_fix_css = drupal_get_path('module', 'quickedit') . '/css/bartik.css';
+    $bartik_fix_css = backdrop_get_path('module', 'quickedit') . '/css/bartik.css';
     $css[$bartik_fix_css] = array(
       'data' => $bartik_fix_css,
       // Same properties as quickedit.(module|theme|icons).css, except for weight.
