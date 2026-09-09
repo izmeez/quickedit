@@ -1,6 +1,30 @@
 <?php
 
 /**
+ * @file
+ * Install, update and uninstall functions for the Quick Edit module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function quickedit_schema() {
+  // Cache bin backing Quick Edit's TempStore: a short-lived, per-user
+  // staging area for an entity's in-progress edits between "start editing
+  // a field" and "save" or "cancel". Kept as its own bin, rather than the
+  // default 'cache' bin, so a site-wide "Clear all caches" doesn't
+  // silently discard someone's in-progress edit.
+  //
+  // @see _quickedit_tempstore_get()
+  // @see _quickedit_tempstore_set()
+  // @see _quickedit_tempstore_clear()
+  $schema['cache_quickedit'] = backdrop_get_schema_unprocessed('system', 'cache');
+  $schema['cache_quickedit']['description'] = 'Cache table for Quick Edit to store entities with in-progress in-place edits.';
+
+  return $schema;
+}
+
+/**
  * Implements hook_requirements().
  */
 function quickedit_requirements($phase) {

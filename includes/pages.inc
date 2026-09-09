@@ -201,9 +201,8 @@ function quickedit_field_edit($entity_type, $entity_id, $field_name, $langcode =
 
   // Replace entity with TempStore copy if available and not resetting, init
   // TempStore copy otherwise.
-  ctools_include('object-cache');
   $tempstore_id = _quickedit_entity_tempstore_id($entity_type, $entity_id);
-  $tempstore_entity = ctools_object_cache_get('quickedit', $tempstore_id);
+  $tempstore_entity = _quickedit_tempstore_get($tempstore_id);
   if ($tempstore_entity && (!isset($_POST['reset']) || $_POST['reset'] !== 'true')) {
     // @todo: https://drupal.org/node/2158977 implemented content locking only
     // for nodes, because Drupal 7 only implements it for nodes. We may need to
@@ -212,8 +211,8 @@ function quickedit_field_edit($entity_type, $entity_id, $field_name, $langcode =
     $entity = $tempstore_entity;
   }
   else {
-    ctools_object_cache_clear('quickedit', $tempstore_id);
-    ctools_object_cache_set('quickedit', $tempstore_id, $entity);
+    _quickedit_tempstore_clear($tempstore_id);
+    _quickedit_tempstore_set($tempstore_id, $entity);
   }
 
   // Determine which subform should be used, initialize form state, build form.
@@ -254,7 +253,7 @@ function quickedit_field_edit($entity_type, $entity_id, $field_name, $langcode =
     if (!empty($form_state['executed'])) {
       // The form submission saved the entity in TempStore. Return the
       // updated view of the field from the TempStore copy.
-      $entity = ctools_object_cache_get('quickedit', $tempstore_id);
+      $entity = _quickedit_tempstore_get($tempstore_id);
 
       // Re-render the updated field.
       $output = _quickedit_render_field($entity_type, $entity, $field_name, $langcode, $view_mode);
@@ -321,10 +320,9 @@ function quickedit_entity_save($entity_type, $entity_id) {
 
   // Take the entity from TempStore and save in entity storage. fieldForm()
   // ensures that the TempStore copy exists ahead.
-  ctools_include('object-cache');
   $tempstore_id = _quickedit_entity_tempstore_id($entity_type, $entity_id);
-  $entity = ctools_object_cache_get('quickedit', $tempstore_id);
-  ctools_object_cache_clear('quickedit', $tempstore_id);
+  $entity = _quickedit_tempstore_get($tempstore_id);
+  _quickedit_tempstore_clear($tempstore_id);
   entity_save($entity_type, $entity);
 
   // Return information about the entity that allows a front end application

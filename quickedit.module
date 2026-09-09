@@ -778,9 +778,59 @@ function _quickedit_entity_tempstore_id($entity_type, $entity_id) {
  *   The entity object being saved to TempStore.
  */
 function _quickedit_entity_save_to_tempstore($entity_type, $entity_id, $entity) {
-  ctools_include('object-cache');
   $tempstore_id = _quickedit_entity_tempstore_id($entity_type, $entity_id);
-  ctools_object_cache_set('quickedit', $tempstore_id, $entity);
+  _quickedit_tempstore_set($tempstore_id, $entity);
+}
+
+/**
+ * Gets a value from Quick Edit's TempStore.
+ *
+ * Quick Edit needs a short-lived, per-user staging area to hold an entity's
+ * in-progress edits between "start editing a field" and "save" (or
+ * "cancel"). Drupal 7 had no core equivalent of Drupal 8's TempStore
+ * service, so the original module borrowed CTools' Object Cache table for
+ * this. Backdrop has no such requirement: this is just Backdrop's own
+ * Cache API against a dedicated bin, so entries survive independently of
+ * the default 'cache' bin (a site-wide "Clear all caches" click shouldn't
+ * silently discard someone's in-progress edit).
+ *
+ * @param string $tempstore_id
+ *   The identifier returned by _quickedit_entity_tempstore_id().
+ *
+ * @return mixed
+ *   The stored value, or FALSE if nothing is stored under this ID.
+ *
+ * @see _quickedit_entity_tempstore_id()
+ */
+function _quickedit_tempstore_get($tempstore_id) {
+  $cache = cache_get($tempstore_id, 'cache_quickedit');
+  return $cache ? $cache->data : FALSE;
+}
+
+/**
+ * Sets a value in Quick Edit's TempStore.
+ *
+ * @param string $tempstore_id
+ *   The identifier returned by _quickedit_entity_tempstore_id().
+ * @param mixed $data
+ *   The value to store.
+ *
+ * @see _quickedit_tempstore_get()
+ */
+function _quickedit_tempstore_set($tempstore_id, $data) {
+  cache_set($tempstore_id, $data, 'cache_quickedit');
+}
+
+/**
+ * Clears a value from Quick Edit's TempStore.
+ *
+ * @param string $tempstore_id
+ *   The identifier returned by _quickedit_entity_tempstore_id().
+ *
+ * @see _quickedit_tempstore_get()
+ */
+function _quickedit_tempstore_clear($tempstore_id) {
+  cache_clear_all($tempstore_id, 'cache_quickedit');
 }
 
 /**
@@ -808,4 +858,11 @@ function quickedit_css_alter(&$css) {
       ),
     );
   }
+}
+
+/**
+ * Implements hook_flush_caches().
+ */
+function quickedit_flush_caches() {
+  return array('cache_quickedit');
 }
