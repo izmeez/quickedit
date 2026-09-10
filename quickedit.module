@@ -811,6 +811,37 @@ function _quickedit_tempstore_clear($tempstore_id) {
 }
 
 /**
+ * Saves an entity, working around the removal of Drupal 7's entity_save().
+ *
+ * Backdrop's Entity API (core/modules/entity/entity.module) has no generic
+ * entity_save() dispatcher and no 'save callback' key in hook_entity_info(),
+ * unlike 'label callback' (@see entity_label()). Entities that implement
+ * EntityInterface (Backdrop's Entity base class) have their own ->save()
+ * method, but core entity types are not guaranteed to use that base class,
+ * so this falls back to the conventional {$entity_type}_save($entity)
+ * function name that node_save(), taxonomy_term_save(), and comment_save()
+ * all follow.
+ *
+ * @param string $entity_type
+ *   The type of the entity being saved.
+ * @param object $entity
+ *   The entity object being saved.
+ *
+ * @todo user_save() takes a second $edit array parameter in addition to the
+ *   account object; confirm saving user entities through Quick Edit works
+ *   as expected, or special-case it here if not.
+ */
+function _quickedit_entity_save($entity_type, $entity) {
+  if ($entity instanceof EntityInterface) {
+    $entity->save();
+  }
+  else {
+    $function = $entity_type . '_save';
+    $function($entity);
+  }
+}
+
+/**
  * Implements hook_css_alter().
  *
  * @see css/bartik.css

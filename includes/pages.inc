@@ -43,7 +43,7 @@ function quickedit_metadata() {
     if (!$entity_type || !entity_get_info($entity_type)) {
       return MENU_NOT_FOUND;
     }
-    $entity = entity_load_single($entity_type, $entity_id);
+    $entity = entity_load($entity_type, $entity_id);
     if (!$entity) {
       return MENU_NOT_FOUND;
     }
@@ -188,7 +188,7 @@ function quickedit_field_edit($entity_type, $entity_id, $field_name, $langcode =
   $commands = array();
 
   // Load entity whose field is to be edited.
-  $entity = entity_load_single($entity_type, $entity_id);
+  $entity = entity_load($entity_type, $entity_id);
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
   $latest_entity_timestamp = $entity->changed;
 
@@ -314,7 +314,7 @@ function quickedit_field_edit($entity_type, $entity_id, $field_name, $langcode =
  */
 function quickedit_entity_save($entity_type, $entity_id) {
   // Ensure the user is allowed to edit this entity.
-  if (!entity_access('update', $entity_type, entity_load_single($entity_type, $entity_id))) {
+  if (!entity_access('update', $entity_type, entity_load($entity_type, $entity_id))) {
     return MENU_ACCESS_DENIED;
   }
 
@@ -323,7 +323,7 @@ function quickedit_entity_save($entity_type, $entity_id) {
   $tempstore_id = _quickedit_entity_tempstore_id($entity_type, $entity_id);
   $entity = _quickedit_tempstore_get($tempstore_id);
   _quickedit_tempstore_clear($tempstore_id);
-  entity_save($entity_type, $entity);
+  _quickedit_entity_save($entity_type, $entity);
 
   // Return information about the entity that allows a front end application
   // to identify it.
@@ -361,7 +361,7 @@ function quickedit_entity_save($entity_type, $entity_id) {
 function quickedit_ckeditor_get_untransformed_text($entity_type, $entity_id, $field_name, $langcode = NULL, $view_mode = NULL) {
   $commands = array();
 
-  $entity = entity_load_single($entity_type, $entity_id);
+  $entity = entity_load($entity_type, $entity_id);
   list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
 
   // Ensure the user is allowed to edit this field.
