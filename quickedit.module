@@ -114,12 +114,34 @@ function quickedit_permission() {
 }
 
 /**
- * Implements hook_page_build().
+ * Implements hook_preprocess_page().
  *
  * Adds the quickedit library to the page for any user who has the 'access
  * in-place editing' permission.
+ *
+ * This replaces what was originally hook_page_build() in the Drupal 7
+ * module. Backdrop has no $page renderable and no hook_page_build() or
+ * hook_page_alter(): both were removed in Backdrop 1.0.0 when the Layout
+ * module replaced the block/region system. Backdrop's own documentation
+ * for that change directs modules that used hook_page_build() to add JS
+ * or other page-level assets toward hook_preprocess_page() instead, using
+ * direct calls (backdrop_add_library(), backdrop_add_js(), etc.) rather
+ * than manipulating a region-keyed render array via #attached, since
+ * hook_preprocess_page() receives a flat $variables array, not $page.
+ *
+ * @todo the "content" region start/end marker injection
+ *   (quickedit_wrap_content_region(), used so Quick Edit can find the
+ *   content region's boundaries even in themes that don't add their own
+ *   region wrappers) has no equivalent here yet. $variables['content'] in
+ *   hook_preprocess_page() may already be flattened markup rather than a
+ *   renderable array by this point, and the regions themselves are now
+ *   Layout-managed; Backdrop's own migration notes suggest
+ *   hook_preprocess_layout() as the place other modules do something
+ *   similar (@see backdrop_set_page_content() removal notes), but that
+ *   needs to be confirmed against Layout module's actual template
+ *   variables before porting this over, not guessed at here.
  */
-function quickedit_page_build(&$page) {
+function quickedit_preprocess_page(&$variables) {
   // If the user lacks the appropriate permission, return early to avoid
   // processing.
   if (!user_access('access in-place editing')) {
@@ -136,19 +158,19 @@ function quickedit_page_build(&$page) {
   // editing is not triggered on node admin paths.
   // @see https://www.drupal.org/node/2264607
   // @see https://www.drupal.org/node/2139341
-  elseif (!empty($page['content']['system_main']['#node_edit_form'])) {
+  //
+  // The original check inspected $page['content']['system_main']['#node_edit_form'],
+  // a flag on the $page renderable that no longer exists in Backdrop.
+  // Backdrop's node.module doesn't set an equivalent flag anywhere, so this
+  // checks the path directly instead.
+  elseif (arg(0) === 'node' && is_numeric(arg(1)) && arg(2) === 'edit') {
     return;
   }
 
-  // Abuse the 'page_top' region for attaching our libraries.
-  $page['page_top']['#attached']['library'][] = array('quickedit', 'quickedit');
+  // Attach our library directly.
+  backdrop_add_library('quickedit', 'quickedit');
 
-  // Certain themes don't add region wrappers, so we can't assume region
-  // wrappers are present. Therefore, Quick Edit must inject its own
-  // alternative: start and end markers for the "content" region.
-  $page['content']['#theme_wrappers'][] = 'quickedit_wrap_content_region';
-
-  // Provide the user ID and permissions hash in Drupal.settings to allow
+  // Provide the user ID and permissions hash in Backdrop.settings to allow
   // JavaScript code to maintain client-side caches.
   // @see Drupal 8's user_page_build()
   // @see Drupal 8's \Drupal\user\PermissionsHash
@@ -167,13 +189,10 @@ function quickedit_page_build(&$page) {
     // hence it will also clear this cache entry.
     cache_set("quickedit_user_permissions_hash:$serialized_roles", $permissions_hash, 'cache_page', CACHE_TEMPORARY);
   }
-  $page['page_top']['#attached']['js'][] = array(
-    'type' => 'setting',
-    'data' => array('quickedit' => array('user' => array(
-      'uid' => $user->uid,
-      'permissionsHash' => $permissions_hash,
-    ))),
-  );
+  backdrop_add_js(array('quickedit' => array('user' => array(
+    'uid' => $user->uid,
+    'permissionsHash' => $permissions_hash,
+  ))), 'setting');
 }
 
 /**
