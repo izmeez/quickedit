@@ -51,6 +51,35 @@ function quickedit_requirements($phase) {
   $requirements = array();
 
   if ($phase == 'runtime') {
+    // Check the site's configured jQuery version. Backdrop lets sites choose
+    // 'legacy' (jQuery 1.12.4) or '4.x' (jQuery 4.0.0) instead of the
+    // default 3.x, via admin/config/development/jquery. Quick Edit has been
+    // developed and tested against the 3.x default; flagged as a warning
+    // rather than an error, since this hasn't been confirmed to actually
+    // break under the other options, jQuery 1.12.4 in particular already
+    // satisfies every version threshold the module's own jQuery-API usage
+    // depends on.
+    $jquery_version = config_get('system.core', 'jquery_version');
+    $requirements['quickedit_jquery'] = array(
+      'title' => t('Quick Edit: jQuery version'),
+      'value' => t('Default (jQuery 3.x)'),
+      'severity' => REQUIREMENT_OK,
+    );
+    if ($jquery_version == 'legacy') {
+      $requirements['quickedit_jquery']['value'] = t('Legacy (jQuery 1.12.4)');
+      $requirements['quickedit_jquery']['description'] = t('Quick Edit has been developed and tested against jQuery 3.x, the Backdrop default. It has not been confirmed to work correctly with the legacy jQuery version selected on this site (!link).', array(
+        '!link' => l(t('jQuery settings'), 'admin/config/development/jquery'),
+      ));
+      $requirements['quickedit_jquery']['severity'] = REQUIREMENT_WARNING;
+    }
+    elseif ($jquery_version == '4.x') {
+      $requirements['quickedit_jquery']['value'] = t('jQuery 4.x');
+      $requirements['quickedit_jquery']['description'] = t('Quick Edit has been developed and tested against jQuery 3.x, the Backdrop default. It has not been confirmed to work correctly with jQuery 4.x, selected on this site (!link).', array(
+        '!link' => l(t('jQuery settings'), 'admin/config/development/jquery'),
+      ));
+      $requirements['quickedit_jquery']['severity'] = REQUIREMENT_WARNING;
+    }
+
     // Best-effort check that the theme is compatible.
     $requirements['quickedit_theme'] = array(
       'title' => t('Quick Edit: theme compatibility'),
