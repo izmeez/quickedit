@@ -129,17 +129,12 @@ function quickedit_permission() {
  * than manipulating a region-keyed render array via #attached, since
  * hook_preprocess_page() receives a flat $variables array, not $page.
  *
- * @todo the "content" region start/end marker injection
- *   (quickedit_wrap_content_region(), used so Quick Edit can find the
- *   content region's boundaries even in themes that don't add their own
- *   region wrappers) has no equivalent here yet. $variables['content'] in
- *   hook_preprocess_page() may already be flattened markup rather than a
- *   renderable array by this point, and the regions themselves are now
- *   Layout-managed; Backdrop's own migration notes suggest
- *   hook_preprocess_layout() as the place other modules do something
- *   similar (@see backdrop_set_page_content() removal notes), but that
- *   needs to be confirmed against Layout module's actual template
- *   variables before porting this over, not guessed at here.
+ * The "content" region start/end marker injection
+ * (quickedit_wrap_content_region()) is handled separately, in
+ * quickedit_preprocess_block(), since it needs to target the specific
+ * block that carries the page's main content, not the page as a whole.
+ *
+ * @see quickedit_preprocess_block()
  */
 function quickedit_preprocess_page(&$variables) {
   // If the user lacks the appropriate permission, return early to avoid
@@ -468,31 +463,87 @@ function quickedit_preprocess_field(&$variables) {
 }
 
 /**
- * Implements hook_preprocess_page().
+ * Implements hook_preprocess_layout().
  *
- * Wraps title field when viewing a node page to make it in-place editable.
+ * Wraps the page title when viewing a node page, to make it in-place
+ * editable.
+ *
+ * This used to be hook_preprocess_page() in the Drupal 7 module, and
+ * initially stayed that way in this port, which was a bug: quickedit.module
+ * already has a separate, unrelated hook_preprocess_page() implementation
+ * (the one that attaches the library, migrated from hook_page_build()), and
+ * a module can't implement the same hook twice under two function bodies.
+ *
+ * Beyond the naming collision, this function's own logic no longer worked
+ * either. It relied on $variables['node'], which Backdrop's Layout module
+ * change record lists as one of the page.tpl.php variables "Removed
+ * entirely" (@see the "New Layout module" change record's "Page variable
+ * changes" section), and it set $variables['title'], which Backdrop's own
+ * template_preprocess_page() confirms it no longer reads or exposes;
+ * $title is set in layout_preprocess_layout() instead (falls back to
+ * backdrop_get_title() when no title block is present), confirmed by
+ * reading core/modules/layout/layout.theme.inc directly. So this needed to
+ * both change hooks and change how it looks up the current node,
+ * menu_get_object() instead of a page variable, the same pattern
+ * template_preprocess_page() itself uses for its node-type body class.
  */
-function quickedit_preprocess_page(&$variables) {
+function quickedit_preprocess_layout(&$variables) {
   // If the user lacks the appropriate permission, return early to avoid
   // processing.
   if (!user_access('access in-place editing')) {
     return;
   }
 
-  // If we don't have a node object to work with, return early to avoid
-  // processing.
-  if (empty($variables['node'])) {
+  // If we're not on a node page, return early to avoid processing.
+  $node = menu_get_object();
+  if (empty($node)) {
     return;
   }
 
   // On full node pages the title of the node becomes the page title so we
   // must handle it differently. In this case, we add a wrapper around the
   // title with the required attributes to enable in-place editability.
-  $node = $variables['node'];
   $node_type = node_type_get_type($node->type);
   if ($node_type->has_title) {
     $language = !empty($node->language) ? $node->language : LANGUAGE_NONE;
-    $variables['title'] = quickedit_wrap_pseudofield(drupal_get_title(), "node/$node->nid/title/$language/full");
+    $variables['title'] = quickedit_wrap_pseudofield(backdrop_get_title(), "node/$node->nid/title/$language/full");
+  }
+}
+
+/**
+ * Implements hook_preprocess_block().
+ *
+ * Injects start and end markers before and after the content region, by
+ * targeting the specific block that carries it.
+ *
+ * This used to be done in hook_page_build() in the Drupal 7 module, adding
+ * a theme wrapper directly to $page['content']. Backdrop has no
+ * hook_page_build() (@see quickedit_preprocess_page()), and what used to be
+ * $page['content']['system_main'], the page's actual main content, is now
+ * delivered as a block: module 'system', delta 'main' ("Main page
+ * content"), confirmed against core/modules/system/system.module's
+ * system_block_info()/system_block_view(). Its content reaches
+ * hook_preprocess_block() as a render array via $variables['content']
+ * (confirmed by reading core/modules/layout/layout.theme.inc's
+ * template_preprocess_block(): it only flattens $content->content to a
+ * string when empty, otherwise assigns the array through as-is), so the
+ * same #theme_wrappers approach as before still works, just relocated to
+ * this block specifically rather than the whole page.
+ *
+ * Certain themes don't add region wrappers, so we can't assume region
+ * wrappers are present. Therefore, Quick Edit must inject its own
+ * alternative: start and end markers for the "content" region.
+ *
+ * @see theme_quickedit_wrap_content_region()
+ */
+function quickedit_preprocess_block(&$variables) {
+  if (!user_access('access in-place editing')) {
+    return;
+  }
+
+  $block = $variables['block'];
+  if ($block->module === 'system' && $block->delta === 'main' && is_array($variables['content'])) {
+    $variables['content']['#theme_wrappers'][] = 'quickedit_wrap_content_region';
   }
 }
 
