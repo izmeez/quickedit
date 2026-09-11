@@ -897,9 +897,13 @@ function _quickedit_tempstore_clear($tempstore_id) {
  * @param object $entity
  *   The entity object being saved.
  *
- * @todo user_save() takes a second $edit array parameter in addition to the
- *   account object; confirm saving user entities through Quick Edit works
- *   as expected, or special-case it here if not.
+ * user_save() was flagged as a possible special case, since Drupal 7's
+ * version took a second $edit array parameter alongside the account object.
+ * Confirmed against Backdrop's own documentation that this no longer applies.
+ * In Backdrop user_save() remains as a wrapper around $user->save() and current
+ * signature is just user_save(User $account). Backdrop's User class also
+ * extends Entity (implements EntityInterface), so the ->save() branch above
+ * already handles user entities correctly too; either branch works.
  */
 function _quickedit_entity_save($entity_type, $entity) {
   if ($entity instanceof EntityInterface) {

@@ -179,7 +179,10 @@ From a Drupal 8 perspective:
 16. There's a bizarre bug in jQuery 1.4.4 (the version of jQuery that Drupal 7
     ships with) where calling `.removeAttr('contentEditable')` fails and calling
     `.removeAttr('contenteditable')` works. So changed to the latter.
-    See http://bugs.jquery.com/ticket/7792.
+    See http://bugs.jquery.com/ticket/7792. (Backdrop port: not applicable.
+    Backdrop core ships jQuery 3.7.1 natively, which doesn't have this bug;
+    reverted to the camelCase form, matching contentEditable usage elsewhere
+    in the codebase; see js/editors/plainTextEditor.js.)
 17. Hooks and internal functions that can pass only `EntityInterface $entity`
     in Drupal 8 need to pass `string $entity_type, stdClass $entity` in Drupal 7.
 18. Only `WebTestBase`-based tests were backported from Drupal 8 to Drupal 7,

@@ -63,7 +63,7 @@
           break;
         case 'candidate':
           if (from !== 'inactive') {
-            this.$textElement.removeAttr('contenteditable');
+            this.$textElement.removeAttr('contentEditable');
           }
           if (from === 'invalid') {
             this.removeValidationErrors();
