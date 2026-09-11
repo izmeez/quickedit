@@ -77,7 +77,7 @@ function quickedit_metadata() {
     }
   }
 
-  drupal_json_output($metadata);
+  backdrop_json_output($metadata);
 }
 
 /**
@@ -103,7 +103,7 @@ function quickedit_attachments() {
 
   // Ensure an AJAX command is generated to load in-place editor attachments.
   $elements['#attached'] = $editorSelector->getEditorAttachments($editors);
-  drupal_process_attached($elements);
+  backdrop_process_attached($elements);
 
   return array('#type' => 'ajax', '#commands' => array());
 }
@@ -141,7 +141,7 @@ function _quickedit_render_field($entity_type, $entity, $field_name, $langcode, 
   if (in_array($view_mode, $entity_view_mode_ids)) {
     if (!_quickedit_is_extra_field($entity_type, $field_name)) {
       $field = field_view_field($entity_type, $entity, $field_name, $view_mode, $langcode);
-      $output = drupal_render($field);
+      $output = backdrop_render($field);
     }
     else {
       list($id, $vid, $bundle) = entity_extract_ids($entity_type, $entity);
@@ -160,7 +160,7 @@ function _quickedit_render_field($entity_type, $entity, $field_name, $langcode, 
     $mode_parts = explode('-', $view_mode, 2);
     $module = reset($mode_parts);
     $rendered_field = module_invoke($module, 'quickedit_render_field', $entity_type, $entity, $field_name, $view_mode, $langcode);
-    $output = drupal_render($rendered_field);
+    $output = backdrop_render($rendered_field);
   }
 
   return $output;
@@ -234,14 +234,14 @@ function quickedit_field_edit($entity_type, $entity_id, $field_name, $langcode =
       'args' => array($entity, $field_name),
     ),
   );
-  $form = drupal_build_form('quickedit_field_form', $form_state);
+  $form = backdrop_build_form('quickedit_field_form', $form_state);
 
 
   // Detect an edit conflict if the current entity timestamp is different
   // from the TempStore entity timestamp (whch is a copy from when the
   // editing process started).
   if (!empty($latest_entity_timestamp) && !empty($tempstore_entity_timestamp) && ($latest_entity_timestamp != $tempstore_entity_timestamp)) {
-    drupal_set_message(t('The copy of the content being edited is outdated. Reload the page to edit an up-to-date version.'), 'error');
+    backdrop_set_message(t('The copy of the content being edited is outdated. Reload the page to edit an up-to-date version.'), 'error');
 
     $commands[] = array(
       'command' => 'quickeditFieldFormValidationErrors',
@@ -277,7 +277,7 @@ function quickedit_field_edit($entity_type, $entity_id, $field_name, $langcode =
     else {
       $commands[] = array(
         'command' => 'quickeditFieldForm',
-        'data' => drupal_render($form),
+        'data' => backdrop_render($form),
       );
 
       $errors = form_get_errors();
@@ -292,8 +292,8 @@ function quickedit_field_edit($entity_type, $entity_id, $field_name, $langcode =
 
   // When working with a hidden form, we don't want any CSS or JS to be loaded.
   if (isset($_POST['nocssjs']) && $_POST['nocssjs'] === 'true') {
-    drupal_static_reset('drupal_add_css');
-    drupal_static_reset('drupal_add_js');
+    backdrop_static_reset('drupal_add_css');
+    backdrop_static_reset('drupal_add_js');
   }
 
   return array('#type' => 'ajax', '#commands' => $commands);

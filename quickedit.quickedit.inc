@@ -13,7 +13,7 @@
  */
 function quickedit_quickedit_editor_info() {
   $editors = array();
-  $path = drupal_get_path('module', 'quickedit') . '/InPlaceEditors';
+  $path = backdrop_get_path('module', 'quickedit') . '/InPlaceEditors';
   $editors['form'] = array(
     'file' => $path . '/formEditor.php',
     'class' => 'FormEditor',

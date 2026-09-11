@@ -177,7 +177,7 @@ function quickedit_preprocess_page(&$variables) {
     $permissions_hash = $cache->data;
   }
   else {
-    $permissions_hash = hash('sha256', drupal_get_hash_salt() . serialize(user_role_permissions($user->roles)));
+    $permissions_hash = hash('sha256', backdrop_get_hash_salt() . serialize(user_role_permissions($user->roles)));
     // Use the 'cache_page' bin along with CACHE_TEMPORARY, because the submit
     // callback for the form responsible for changing user permissions calls
     // cache_clear_all() without arguments, which clears the page cache, and
@@ -358,10 +358,10 @@ function quickedit_field_attach_view_alter(&$output, $context) {
  * @see hook_quickedit_extra_fields_info_alter()
  */
 function quickedit_extra_field_info($entity_type = NULL, $field_name = NULL, $key = NULL, $reset = FALSE) {
-  $extra_fields = &drupal_static(__FUNCTION__, NULL);
+  $extra_fields = &backdrop_static(__FUNCTION__, NULL);
   if (!$extra_fields || $reset) {
     $extra_fields = module_invoke_all('quickedit_extra_fields_info');
-    drupal_alter('quickedit_extra_fields_info', $editors);
+    backdrop_alter('quickedit_extra_fields_info', $editors);
   }
 
   if (isset($entity_type)) {
@@ -659,10 +659,10 @@ function quickedit_preprocess_panels_pane(&$variables) {
  * @see Drupal 8's Quick Edit's EditorManager
  */
 function quickedit_editor_list($reset = FALSE) {
-  $editors = &drupal_static(__FUNCTION__, NULL);
+  $editors = &backdrop_static(__FUNCTION__, NULL);
   if (!$editors || $reset) {
     $editors = module_invoke_all('quickedit_editor_info');
-    drupal_alter('quickedit_editor_info', $editors);
+    backdrop_alter('quickedit_editor_info', $editors);
   }
 
   return $editors;
@@ -697,7 +697,7 @@ function quickedit_editor_get($editor) {
 function _quickedit_get_editor_plugin($editor_id, $reset = FALSE) {
   $editors = quickedit_editor_list();
 
-  $plugins = &drupal_static(__FUNCTION__, NULL);
+  $plugins = &backdrop_static(__FUNCTION__, NULL);
   if (!$plugins || $reset) {
     foreach ($editors as $editor_plugin_id => $editor) {
       require_once $editor['file'];
@@ -780,7 +780,7 @@ function theme_quickedit_wrap_field($variables) {
   if ($variables['inline']) {
     $el = 'span';
   }
-  return '<'. $el . drupal_attributes($variables['attributes']) . '>' .  $variables['value'] . '</' . $el . '>';
+  return '<'. $el . backdrop_attributes($variables['attributes']) . '>' .  $variables['value'] . '</' . $el . '>';
 }
 
 /**

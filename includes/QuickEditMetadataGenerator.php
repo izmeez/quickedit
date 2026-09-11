@@ -120,7 +120,7 @@ class QuickEditMetadataGenerator implements QuickEditMetadataGeneratorInterface 
     }
 
     // Allow the metadata to be altered.
-    drupal_alter('quickedit_editor_metadata', $metadata, $alter_hook_context);
+    backdrop_alter('quickedit_editor_metadata', $metadata, $alter_hook_context);
 
     return $metadata;
   }

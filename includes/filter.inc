@@ -216,7 +216,7 @@ function filter_get_filter_types_by_format($format_id) {
     }
 
     if (!isset($filters_info[$filter->name]['type'])) {
-      drupal_set_message(t('The filter "!filter" has no type specified! This is required for the Quick Edit module. Please consult Quick Edit module\'s README.', array('!filter' => $filter->name)), 'error');
+      backdrop_set_message(t('The filter "!filter" has no type specified! This is required for the Quick Edit module. Please consult Quick Edit module\'s README.', array('!filter' => $filter->name)), 'error');
       continue;
     }
 

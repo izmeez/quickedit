@@ -44,7 +44,7 @@ function quickedit_schema() {
  *
  * The theme-compatibility check (does the active theme's markup actually
  * carry Quick Edit's data- attributes) is unrelated to either of those and
- * is kept, with entity_load_single() and drupal_http_request() updated to
+ * is kept, with entity_load_single() and backdrop_http_request() updated to
  * their Backdrop equivalents.
  */
 function quickedit_requirements($phase) {

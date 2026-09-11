@@ -89,10 +89,10 @@ class QuickEditEditorSelector implements QuickEditEditorSelectorInterface {
       $editor_plugin = _quickedit_get_editor_plugin($editor_id);
       $attachments[$editor_id] = $editor_plugin->getAttachments();
       // Allows contrib to declare additional dependencies for the editor.
-      drupal_alter('quickedit_editor_attachments', $attachments[$editor_id], $editor_id);
+      backdrop_alter('quickedit_editor_attachments', $attachments[$editor_id], $editor_id);
     }
 
-    return drupal_array_merge_deep_array($attachments);
+    return backdrop_array_merge_deep_array($attachments);
   }
 
 }

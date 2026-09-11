@@ -33,7 +33,7 @@
  * @see InPlaceEditors/plainTextEditor.php
  */
 function hook_quickedit_editor_info() {
-  $path = drupal_get_path('module', 'quickedit') . '/InPlaceEditors';
+  $path = backdrop_get_path('module', 'quickedit') . '/InPlaceEditors';
 
   // The "plain_text" in-place editor only works for text fields without a text
   // format.

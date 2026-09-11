@@ -49,7 +49,7 @@ interface QuickEditInPlaceEditorInterface {
    * @return array
    *   An array of attachments, for use with #attached.
    *
-   * @see drupal_process_attached()
+   * @see backdrop_process_attached()
    */
   public function getAttachments();
 
