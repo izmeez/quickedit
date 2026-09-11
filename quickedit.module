@@ -600,54 +600,6 @@ function quickedit_node_view_alter(&$build) {
 }
 
 /**
- * Implements hook_preprocess_panels_pane().
- *
- * When a node is added as a pane, get it's view mode to build
- * data-quickedit-field-id properly.
- */
-function quickedit_preprocess_panels_pane(&$variables) {
-  // If the user lacks the appropriate permission, return early to avoid
-  // processing.
-  if (!user_access('access in-place editing')) {
-    return;
-  }
-
-  // If we don't have a node object to work with, return early to avoid
-  // processing.
-  // Note: This convoluted check is required because the expression
-  // $variables['content']['#node'] is being interpreted as "the first character
-  // of the string in $variables['content']" in panes that contain 'content' as
-  // a string, rather than an array. Bleh.
-  if (!isset($variables['content']['#node']) || !is_object($variables['content']['#node'])) {
-    return;
-  }
-
-  $node = $variables['content']['#node'];
-  $language = !empty($node->language) ? $node->language : LANGUAGE_NONE;
-  $view_mode = !empty($variables['pane']->configuration['build_mode']) ? $variables['pane']->configuration['build_mode'] : 'default';
-  $quickedit_id_suffix = "$language/$view_mode";
-
-  // Set data-quickedit-is-contextual-region-for-entity attribute, to indicate
-  // that this Panels pane contains an in-place editable entity, yet the
-  // contextual region is not the DOM element of that entity itself, but this
-  // Panels pane. The data-quickedit-entity-id attribute is already being set on
-  // the node's DOM element, since Panels just uses the standard render
-  // pipeline.
-  $variables['attributes_array']['data-quickedit-is-contextual-region-for-entity'] = '';
-
-  $node_type = node_type_get_type($node->type);
-  if ($node_type->has_title) {
-    // Title needs some special handling. Only wraps it when it hasn't been
-    // overridden. There is no way to update the panels configuration in Quick
-    // Edit module currently.
-    $configuration = $variables['pane']->configuration;
-    if (!$configuration['override_title']) {
-      $variables['title'] = quickedit_wrap_pseudofield($variables['title'], "node/$node->nid/title/$quickedit_id_suffix");
-    }
-  }
-}
-
-/**
  * Discovers all available editors by invoking hook_quickedit_editor_info().
  *
  * @param bool $reset
