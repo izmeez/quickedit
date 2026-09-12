@@ -265,6 +265,16 @@ function quickedit_library_info() {
       array('quickedit', 'underscore'),
       array('quickedit', 'backbone'),
       array('system', 'jquery.form'),
+      // jQuery UI Position (core/misc/ui/jquery.ui.position.min.js) assumes
+      // the $.ui namespace already exists (it assigns to $.ui.position
+      // directly, never initializing $.ui itself). That namespace is created
+      // by jquery.ui.version.min.js, part of the base 'ui' library, not
+      // 'ui.position'. Backdrop's own 'ui.widget' library depends on 'ui'
+      // for exactly this reason; 'ui.position' doesn't declare the same
+      // dependency in core, so it has to be added here explicitly, or
+      // EntityToolbarView.js's .position() call fails at runtime with
+      // "can't access property 'position', $.ui is undefined".
+      array('system', 'ui'),
       array('system', 'ui.position'),
       array('system', 'backdrop.form'),
       array('system', 'backdrop.ajax'),
