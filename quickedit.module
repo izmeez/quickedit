@@ -469,7 +469,7 @@ function quickedit_preprocess_field(&$variables) {
   }
 
   // Provide metadata through data- attributes.
-  $variables['attributes_array']['data-quickedit-field-id'] = "$entity_type/$id/$field_name/$language/$view_mode";
+  $variables['attributes']['data-quickedit-field-id'] = "$entity_type/$id/$field_name/$language/$view_mode";
 }
 
 /**
@@ -581,7 +581,7 @@ function quickedit_preprocess_node(&$variables) {
 
   // Set data-quickedit-entity-id attribute.
   $node = $variables['elements']['#node'];
-  $variables['attributes_array']['data-quickedit-entity-id'] = 'node/' . $node->nid;
+  $variables['attributes']['data-quickedit-entity-id'] = 'node/' . $node->nid;
 
   // Pseudo-field: title.
   $node_type = node_type_get_type($bundle);
