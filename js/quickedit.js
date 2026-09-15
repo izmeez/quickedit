@@ -229,17 +229,28 @@
    *   This document's body element.
    */
   function initQuickEdit (bodyElement) {
-    Backdrop.quickedit.collections.entities = new Backdrop.quickedit.EntityCollection();
-    Backdrop.quickedit.collections.fields = new Backdrop.quickedit.FieldCollection();
+    try {
+      Backdrop.quickedit.collections.entities = new Backdrop.quickedit.EntityCollection();
+      Backdrop.quickedit.collections.fields = new Backdrop.quickedit.FieldCollection();
 
-    // Instantiate AppModel (application state) and AppView, which is the
-    // controller of the whole in-place editing experience.
-    Backdrop.quickedit.app = new Backdrop.quickedit.AppView({
-      el: bodyElement,
-      model: new Backdrop.quickedit.AppModel(),
-      entitiesCollection: Backdrop.quickedit.collections.entities,
-      fieldsCollection: Backdrop.quickedit.collections.fields
-    });
+      // Instantiate AppModel (application state) and AppView, which is the
+      // controller of the whole in-place editing experience.
+      Backdrop.quickedit.app = new Backdrop.quickedit.AppView({
+        el: bodyElement,
+        model: new Backdrop.quickedit.AppModel(),
+        entitiesCollection: Backdrop.quickedit.collections.entities,
+        fieldsCollection: Backdrop.quickedit.collections.fields
+      });
+    }
+    catch (e) {
+      // Without this, Backdrop.quickedit.app silently stays null forever
+      // (jQuery.once() marks 'body' as processed before calling this
+      // function, so nothing ever retries it), and the actual failure only
+      // surfaces much later, and confusingly, as "Backdrop.quickedit.app is
+      // null" wherever something first tries to use it.
+      window.console && console.error('QuickEdit: initQuickEdit() failed.', e);
+      throw e;
+    }
   }
 
   /**
