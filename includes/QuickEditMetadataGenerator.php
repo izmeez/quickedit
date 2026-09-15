@@ -109,7 +109,7 @@ class QuickEditMetadataGenerator implements QuickEditMetadataGeneratorInterface 
       $editor_plugin = _quickedit_get_editor_plugin($editor_id);
       $attachments[$editor_id] = $editor_plugin->getAttachments();
       $custom_metadata = $editor_plugin->getMetadata($instance, $items);
-      if (count($custom_metadata)) {
+      if (!empty($custom_metadata)) {
         $metadata['custom'] = $custom_metadata;
       }
 

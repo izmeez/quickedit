@@ -281,7 +281,7 @@ function quickedit_field_edit($entity_type, $entity_id, $field_name, $langcode =
       );
 
       $errors = form_get_errors();
-      if (count($errors)) {
+      if (!empty($errors)) {
         $commands[] = array(
           'command' => 'quickeditFieldFormValidationErrors',
           'data' => theme('status_messages'),
