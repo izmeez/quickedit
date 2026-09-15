@@ -150,7 +150,16 @@
     }
   };
 
-  Backdrop.quickedit = {
+  // Guard against quickedit.js being loaded/executed more than once on the
+  // same page (e.g. if it gets redundantly re-sent as part of an AJAX
+  // attachment response, since quickedit.inPlaceEditor.form and
+  // quickedit.inPlaceEditor.plainText both depend on this library). Without
+  // this guard, a second execution silently resets app/collections/editors/
+  // metadata back to their defaults; nothing throws, so there's nothing to
+  // catch or log, it just permanently erases whatever initQuickEdit() had
+  // already set up, and jQuery.once() prevents initQuickEdit() from ever
+  // being called again to repair it.
+  Backdrop.quickedit = Backdrop.quickedit || {
     // A Backdrop.quickedit.AppView instance.
     app: null,
 
